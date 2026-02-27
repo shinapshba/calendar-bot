@@ -2,8 +2,7 @@ PRAGMA foreign_keys = off;
 BEGIN TRANSACTION;
 
 CREATE TABLE IF NOT EXISTS super_user (
-    username    TEXT NOT NULL,
-    userid      TEXT NOT NULL
+    username    TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS token (
