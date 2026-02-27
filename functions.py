@@ -21,16 +21,25 @@ def add_cancel_button(markup):
     markup.row(InlineKeyboardButton(text='Отмена', callback_data='cancel'))
 
 
-def reply_by_common_chats_markup(bot, call, markup_prefix):
+def get_common_chats(bot, call):
     chat_ides = list(map(lambda c: c.chat_id, model.select_all_chats()))
     chats = list(map(lambda i: bot.get_chat(i), chat_ides))
     groups = list(filter(lambda c: c.type in ['group', 'supergroup'], chats))
-    common_chats = list(filter(lambda group: bot.get_chat_member(group.id, call.from_user.id).status in
-                                             ['creator', 'administrator', 'member'], groups))
+    return list(filter(lambda group: bot.get_chat_member(group.id, call.from_user.id).status in
+                                     ['creator', 'administrator', 'member'], groups))
+
+
+def build_common_chats_markup(bot, call, markup_prefix):
+    common_chats = get_common_chats(bot, call)
     markup = InlineKeyboardMarkup()
     markup.row_width = 6
     for chat in common_chats:
         markup.add(InlineKeyboardButton(text=str(chat.title), callback_data=f'{markup_prefix}{chat.id}'))
+    return markup
+
+
+def reply_by_common_chats_markup(bot, call, markup_prefix):
+    markup = build_common_chats_markup(bot, call, markup_prefix)
     if call.message.chat.type == 'private':
         markup.add(InlineKeyboardButton(text='ЛС', callback_data=f'{markup_prefix}{call.message.chat.id}'))
     add_cancel_button(markup)
@@ -53,18 +62,35 @@ class MeetingFunctions:
 
     def show(self, call):
         if call.message.chat.type != 'private':
-            self.show_(call.message, call.message.chat.id)
+            self.show_(call, call.message.chat.id)
         else:
-            reply_by_common_chats_markup(self.bot, call, 'show_meeting_group_id')
+            prefix = 'show_meeting_group_id'
+            markup = build_common_chats_markup(self.bot, call, prefix)
+            if call.message.chat.type == 'private':
+                markup.row(
+                    InlineKeyboardButton(text='Личные', callback_data=f'{prefix}{call.message.chat.id}'),
+                    InlineKeyboardButton(text='Все', callback_data=f'{prefix}all')
+                )
+            add_cancel_button(markup)
+            self.bot.send_message(call.message.chat.id, 'Выберите чат или опцию', reply_markup=markup)
 
-    def show_(self, message, meeting_chat_id):
-        meetings = model.select_meetings(meeting_chat_id)
-        future_meetings = list(filter(lambda m: utils.is_in_future(m.date_time), meetings))
-        meetings_daily = model.select_meetings_daily(meeting_chat_id)
-        meetings_weekly = model.select_meetings_weekly(meeting_chat_id)
-        meetings_weekly_double = model.select_meetings_weekly_double(meeting_chat_id)
+    def show_(self, call, meeting_chat_id):
+        if meeting_chat_id == 'all':
+            common_chat_ides = list(map(lambda c: c.id, get_common_chats(self.bot, call)))
+            common_chat_ides.append(call.message.chat.id)
+            meetings = model.select_meetings_for_chats(common_chat_ides)
+            future_meetings = list(filter(lambda m: utils.is_in_future(m.date_time), meetings))
+            meetings_daily = model.select_meetings_daily_for_chats(common_chat_ides)
+            meetings_weekly = model.select_meetings_weekly_for_chats(common_chat_ides)
+            meetings_weekly_double = model.select_meetings_weekly_double_for_chats(common_chat_ides)
+        else:
+            meetings = model.select_meetings(meeting_chat_id)
+            future_meetings = list(filter(lambda m: utils.is_in_future(m.date_time), meetings))
+            meetings_daily = model.select_meetings_daily(meeting_chat_id)
+            meetings_weekly = model.select_meetings_weekly(meeting_chat_id)
+            meetings_weekly_double = model.select_meetings_weekly_double(meeting_chat_id)
         if len(future_meetings) + len(meetings_daily) + len(meetings_weekly) + len(meetings_weekly_double) == 0:
-            self.bot.send_message(message.chat.id, 'Нет встреч для этого чата 💅')
+            self.bot.send_message(call.message.chat.id, 'Нет встреч для этого чата 💅')
         else:
             text = 'Встречи:\n'
             for fm in future_meetings:
@@ -75,7 +101,7 @@ class MeetingFunctions:
                 text += f' * {MeetingWeekly.define_day_string(mw.day)}, в {mw.time_}\n'
             for mwd in meetings_weekly_double:
                 text += f' * {MeetingWeeklyDouble.define_day_string(mwd.is_even, mwd.day)}, в {mwd.time_}\n'
-            self.bot.send_message(message.chat.id, text)
+            self.bot.send_message(call.message.chat.id, text)
 
     def delete(self, call):
         if call.message.chat.type != 'private':

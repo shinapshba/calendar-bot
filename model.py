@@ -4,10 +4,9 @@ from dto import Chat, Meeting, MeetingDaily, MeetingWeekly, MeetingWeeklyDouble
 
 __DATABASE_FILE = 'database.db'
 
-__SELECT_TOKEN = 'select data from token'
-__IS_SUPER_USER = 'select exists (select 1 from super_user where username=?)'
-__SELECT_ALL_CHATS = 'select * from chat'
-
+__SELECT_TOKEN = 'SELECT data FROM token'
+__IS_SUPER_USER = 'SELECT EXISTS (SELECT 1 FROM super_user WHERE username=?)'
+__SELECT_ALL_CHATS = 'SELECT * FROM chat'
 __SELECT_MEETING = 'SELECT * FROM meeting WHERE chat_id = ?'
 __SELECT_MEETING_DAILY = 'SELECT * FROM meeting_daily WHERE chat_id = ?'
 __SELECT_MEETING_WEEKLY = 'SELECT * FROM meeting_weekly WHERE chat_id = ?'
@@ -48,6 +47,13 @@ __UPDATE_MEETING_WEEKLY_DOUBLE_NOTIFIED_FLAG = 'UPDATE meeting_weekly_double SET
 __BACKUP_MEETING_DAILY = 'UPDATE meeting_daily SET is_notified = 0'
 __BACKUP_MEETING_WEEKLY = 'UPDATE meeting_weekly SET is_notified = 0'
 __BACKUP_MEETING_WEEKLY_DOUBLE = 'UPDATE meeting_weekly_double SET is_notified = 0'
+
+
+def __build_placeholders_with_params(ides):
+    if not ides:
+        return [], ""
+    clean_ides = [str(id_) for id_ in ides]
+    return ','.join(['?'] * len(clean_ides)), clean_ides
 
 
 def is_super_user(username):
@@ -142,6 +148,50 @@ def select_meetings_weekly_double(chat_id):
                                                                    row[6], row[7], row[8], row[9])
         curr = conn.cursor()
         curr.execute(__SELECT_MEETING_WEEKLY_DOUBLE, (chat_id,))
+        return curr.fetchall()
+
+
+def select_meetings_for_chats(chat_ides):
+    with sqlite3.connect(__DATABASE_FILE, check_same_thread=False) as conn:
+        placeholders, chat_ides = __build_placeholders_with_params(chat_ides)
+        query = f'SELECT * FROM meeting WHERE chat_id IN ({placeholders})'
+        conn.row_factory = lambda cursor, row: Meeting(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7],
+                                                       row[8])
+        curr = conn.cursor()
+        curr.execute(query, chat_ides)
+        return curr.fetchall()
+
+
+def select_meetings_daily_for_chats(chat_ides):
+    with sqlite3.connect(__DATABASE_FILE, check_same_thread=False) as conn:
+        placeholders, chat_ides = __build_placeholders_with_params(chat_ides)
+        query = f'SELECT * FROM meeting_daily WHERE chat_id IN ({placeholders})'
+        conn.row_factory = lambda cursor, row: MeetingDaily(row[0], row[1], row[2], row[3], row[4], row[5], row[6],
+                                                            row[7])
+        curr = conn.cursor()
+        curr.execute(query, chat_ides)
+        return curr.fetchall()
+
+
+def select_meetings_weekly_for_chats(chat_ides):
+    with sqlite3.connect(__DATABASE_FILE, check_same_thread=False) as conn:
+        placeholders, chat_ides = __build_placeholders_with_params(chat_ides)
+        query = f'SELECT * FROM meeting_weekly WHERE chat_id IN ({placeholders})'
+        conn.row_factory = lambda cursor, row: MeetingWeekly(row[0], row[1], row[2], row[3], row[4], row[5], row[6],
+                                                             row[7], row[8])
+        curr = conn.cursor()
+        curr.execute(query, chat_ides)
+        return curr.fetchall()
+
+
+def select_meetings_weekly_double_for_chats(chat_ides):
+    with sqlite3.connect(__DATABASE_FILE, check_same_thread=False) as conn:
+        placeholders, chat_ides = __build_placeholders_with_params(chat_ides)
+        query = f'SELECT * FROM meeting_weekly_double WHERE chat_id IN ({placeholders})'
+        conn.row_factory = lambda cursor, row: MeetingWeeklyDouble(row[0], row[1], row[2], row[3], row[4], row[5],
+                                                                   row[6], row[7], row[8], row[9])
+        curr = conn.cursor()
+        curr.execute(query, chat_ides)
         return curr.fetchall()
 
 
