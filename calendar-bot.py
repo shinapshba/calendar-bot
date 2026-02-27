@@ -52,6 +52,7 @@ COMMANDS_ADMIN = {
 }
 
 
+# region root commands
 @bot.message_handler(commands=['start'])
 def start(message):
     model.upsert_chat(message.chat.id, message.chat.username, message.chat.title)
@@ -81,6 +82,9 @@ def admin(message):
         bot.send_message(message.chat.id, 'Управление доступно только администраторам бота 🔒')
 
 
+# endregion
+
+# region root handlers
 @bot.callback_query_handler(func=lambda call: call.data.startswith('command_'))
 def command_callback_handler(call):
     command_id = int(call.data.replace('command_', ''))
@@ -95,6 +99,8 @@ def command_callback_handler(call):
 def cancel_callback_handler(call):
     bot.delete_message(call.message.chat.id, call.message.message_id)
 
+
+# endregion
 
 # region callbacks from functions
 @bot.callback_query_handler(func=lambda call: call.data.startswith('show_meeting_group_id'))
@@ -153,7 +159,6 @@ def cancel_callback_handler(call):
 
 
 # endregion
-
 
 # region scheduling
 def handle_exceptions(func):
