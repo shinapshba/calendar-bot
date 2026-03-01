@@ -6,6 +6,7 @@ import telebot
 import schedule
 import datetime
 import time
+import traceback
 
 from threading import Thread
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
@@ -13,7 +14,10 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 class BotExceptionHandler(telebot.ExceptionHandler):
     def handle(self, exception):
-        print(f'Error in bot: {exception}')
+        stack_trace = traceback.format_exc()
+        print('--- Error in bot trace start ---')
+        print(stack_trace)
+        print('--- Error in bot trace end ---')
         return True
 
 
