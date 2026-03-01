@@ -23,16 +23,14 @@ __DELETE_MEETING_WEEKLY_DOUBLE = 'DELETE FROM meeting_weekly_double WHERE id = ?
 
 __UPSERT_CHAT = ('insert into chat(chat_id, username, title) values(?, ?, ?) on conflict(chat_id) do update '
                  'set username=excluded.username, title=excluded.title')
-__INSERT_MEETING_DAILY = ('INSERT INTO meeting_daily (chat_id, username, place, description, time, notify_lag_min) '
-                          'VALUES (?, ?, ?, ?, ?, ?)')
-__INSERT_MEETING_WEEKLY = ('INSERT INTO meeting_weekly ('
-                           'chat_id, username, place, description, day, time, notify_lag_min'
-                           ') VALUES (?, ?, ?, ?, ?, ?, ?)')
-__INSERT_MEETING_WEEKLY_DOUBLE = ('INSERT INTO meeting_weekly_double ('
-                                  'chat_id, username, place, description, is_even, day, time, notify_lag_min'
-                                  ') VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
-__INSERT_MEETING = ('INSERT INTO meeting (chat_id, username, place, description, date_time, notify_lag_min) '
-                    'VALUES (?, ?, ?, ?, ?, ?)')
+__INSERT_MEETING_DAILY = ('INSERT INTO meeting_daily (chat_id, chat_title, username, place, description, time, '
+                          'notify_lag_min) VALUES (?, ?, ?, ?, ?, ?, ?)')
+__INSERT_MEETING_WEEKLY = ('INSERT INTO meeting_weekly (chat_id, chat_title, username, place, description, day, time, '
+                           'notify_lag_min) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
+__INSERT_MEETING_WEEKLY_DOUBLE = ('INSERT INTO meeting_weekly_double (chat_id, chat_title, username, place, '
+                                  'description, is_even, day, time, notify_lag_min) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
+__INSERT_MEETING = ('INSERT INTO meeting (chat_id, chat_title, username, place, description, date_time, '
+                    'notify_lag_min) VALUES (?, ?, ?, ?, ?, ?, ?)')
 
 __SELECT_MEETING_DAILY_NOT_NOTIFIED = 'SELECT * from meeting_daily WHERE is_notified = 0'
 __SELECT_MEETING_WEEKLY_NOT_NOTIFIED = 'SELECT * from meeting_weekly WHERE is_notified = 0'
@@ -85,40 +83,41 @@ def select_all_chats():
         return curr.fetchall()
 
 
-def insert_meeting(chat_id, username, place, description, date_time, notify_lag_min):
+def insert_meeting(chat_id, chat_title, username, place, description, date_time, notify_lag_min):
     with sqlite3.connect(__DATABASE_FILE, check_same_thread=False) as conn:
         curr = conn.cursor()
-        curr.execute(__INSERT_MEETING, (chat_id, username, place, description, date_time, notify_lag_min))
+        parameters = (chat_id, chat_title, username, place, description, date_time, notify_lag_min,)
+        curr.execute(__INSERT_MEETING, parameters)
         conn.commit()
 
 
-def insert_meeting_daily(chat_id, username, place, description, time, notify_lag_min):
+def insert_meeting_daily(chat_id, chat_title, username, place, description, time, notify_lag_min):
     with sqlite3.connect(__DATABASE_FILE, check_same_thread=False) as conn:
         curr = conn.cursor()
-        curr.execute(__INSERT_MEETING_DAILY, (chat_id, username, place, description, time, notify_lag_min))
+        parameters = (chat_id, chat_title, username, place, description, time, notify_lag_min,)
+        curr.execute(__INSERT_MEETING_DAILY, parameters)
         conn.commit()
 
 
-def insert_meeting_weekly(chat_id, username, place, description, day, time, notify_lag_min):
+def insert_meeting_weekly(chat_id, chat_title, username, place, description, day, time, notify_lag_min):
     with sqlite3.connect(__DATABASE_FILE, check_same_thread=False) as conn:
         curr = conn.cursor()
-        curr.execute(__INSERT_MEETING_WEEKLY, (chat_id, username, place, description, day, time,
-                                               notify_lag_min,))
+        parameters = (chat_id, chat_title, username, place, description, day, time, notify_lag_min,)
+        curr.execute(__INSERT_MEETING_WEEKLY, parameters)
         conn.commit()
 
 
-def insert_meeting_weekly_double(chat_id, username, place, description, period, day, time, notify_lag_min):
+def insert_meeting_weekly_double(chat_id, chat_title, username, place, description, period, day, time, notify_lag_min):
     with sqlite3.connect(__DATABASE_FILE, check_same_thread=False) as conn:
         curr = conn.cursor()
-        curr.execute(__INSERT_MEETING_WEEKLY_DOUBLE, (chat_id, username, place, description, period, day,
-                                                      time, notify_lag_min,))
+        parameters = (chat_id, chat_title, username, place, description, period, day, time, notify_lag_min,)
+        curr.execute(__INSERT_MEETING_WEEKLY_DOUBLE, parameters)
         conn.commit()
 
 
 def select_meetings(chat_id):
     with sqlite3.connect(__DATABASE_FILE, check_same_thread=False) as conn:
-        conn.row_factory = lambda cursor, row: Meeting(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7],
-                                                       row[8])
+        conn.row_factory = Meeting.row_factory()
         curr = conn.cursor()
         curr.execute(__SELECT_MEETING, (chat_id,))
         return curr.fetchall()
@@ -126,8 +125,7 @@ def select_meetings(chat_id):
 
 def select_meetings_daily(chat_id):
     with sqlite3.connect(__DATABASE_FILE, check_same_thread=False) as conn:
-        conn.row_factory = lambda cursor, row: MeetingDaily(row[0], row[1], row[2], row[3], row[4], row[5], row[6],
-                                                            row[7])
+        conn.row_factory = MeetingDaily.row_factory()
         curr = conn.cursor()
         curr.execute(__SELECT_MEETING_DAILY, (chat_id,))
         return curr.fetchall()
@@ -135,8 +133,7 @@ def select_meetings_daily(chat_id):
 
 def select_meetings_weekly(chat_id):
     with sqlite3.connect(__DATABASE_FILE, check_same_thread=False) as conn:
-        conn.row_factory = lambda cursor, row: MeetingWeekly(row[0], row[1], row[2], row[3], row[4], row[5], row[6],
-                                                             row[7], row[8])
+        conn.row_factory = MeetingWeekly.row_factory()
         curr = conn.cursor()
         curr.execute(__SELECT_MEETING_WEEKLY, (chat_id,))
         return curr.fetchall()
@@ -144,8 +141,7 @@ def select_meetings_weekly(chat_id):
 
 def select_meetings_weekly_double(chat_id):
     with sqlite3.connect(__DATABASE_FILE, check_same_thread=False) as conn:
-        conn.row_factory = lambda cursor, row: MeetingWeeklyDouble(row[0], row[1], row[2], row[3], row[4], row[5],
-                                                                   row[6], row[7], row[8], row[9])
+        conn.row_factory = MeetingWeeklyDouble.row_factory()
         curr = conn.cursor()
         curr.execute(__SELECT_MEETING_WEEKLY_DOUBLE, (chat_id,))
         return curr.fetchall()
@@ -155,8 +151,7 @@ def select_meetings_for_chats(chat_ides):
     with sqlite3.connect(__DATABASE_FILE, check_same_thread=False) as conn:
         placeholders, chat_ides = __build_placeholders_with_params(chat_ides)
         query = f'SELECT * FROM meeting WHERE chat_id IN ({placeholders})'
-        conn.row_factory = lambda cursor, row: Meeting(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7],
-                                                       row[8])
+        conn.row_factory = Meeting.row_factory()
         curr = conn.cursor()
         curr.execute(query, chat_ides)
         return curr.fetchall()
@@ -166,8 +161,7 @@ def select_meetings_daily_for_chats(chat_ides):
     with sqlite3.connect(__DATABASE_FILE, check_same_thread=False) as conn:
         placeholders, chat_ides = __build_placeholders_with_params(chat_ides)
         query = f'SELECT * FROM meeting_daily WHERE chat_id IN ({placeholders})'
-        conn.row_factory = lambda cursor, row: MeetingDaily(row[0], row[1], row[2], row[3], row[4], row[5], row[6],
-                                                            row[7])
+        conn.row_factory = MeetingDaily.row_factory()
         curr = conn.cursor()
         curr.execute(query, chat_ides)
         return curr.fetchall()
@@ -177,8 +171,7 @@ def select_meetings_weekly_for_chats(chat_ides):
     with sqlite3.connect(__DATABASE_FILE, check_same_thread=False) as conn:
         placeholders, chat_ides = __build_placeholders_with_params(chat_ides)
         query = f'SELECT * FROM meeting_weekly WHERE chat_id IN ({placeholders})'
-        conn.row_factory = lambda cursor, row: MeetingWeekly(row[0], row[1], row[2], row[3], row[4], row[5], row[6],
-                                                             row[7], row[8])
+        conn.row_factory = MeetingWeekly.row_factory()
         curr = conn.cursor()
         curr.execute(query, chat_ides)
         return curr.fetchall()
@@ -188,8 +181,7 @@ def select_meetings_weekly_double_for_chats(chat_ides):
     with sqlite3.connect(__DATABASE_FILE, check_same_thread=False) as conn:
         placeholders, chat_ides = __build_placeholders_with_params(chat_ides)
         query = f'SELECT * FROM meeting_weekly_double WHERE chat_id IN ({placeholders})'
-        conn.row_factory = lambda cursor, row: MeetingWeeklyDouble(row[0], row[1], row[2], row[3], row[4], row[5],
-                                                                   row[6], row[7], row[8], row[9])
+        conn.row_factory = MeetingWeeklyDouble.row_factory()
         curr = conn.cursor()
         curr.execute(query, chat_ides)
         return curr.fetchall()
@@ -197,8 +189,7 @@ def select_meetings_weekly_double_for_chats(chat_ides):
 
 def select_meetings_by_username(chat_id, username):
     with sqlite3.connect(__DATABASE_FILE, check_same_thread=False) as conn:
-        conn.row_factory = lambda cursor, row: Meeting(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7],
-                                                       row[8])
+        conn.row_factory = Meeting.row_factory()
         curr = conn.cursor()
         curr.execute(__SELECT_MEETING_BY_USERNAME, (chat_id, username,))
         return curr.fetchall()
@@ -206,8 +197,7 @@ def select_meetings_by_username(chat_id, username):
 
 def select_meetings_daily_by_username(chat_id, username):
     with sqlite3.connect(__DATABASE_FILE, check_same_thread=False) as conn:
-        conn.row_factory = lambda cursor, row: MeetingDaily(row[0], row[1], row[2], row[3], row[4], row[5], row[6],
-                                                            row[7])
+        conn.row_factory = MeetingDaily.row_factory()
         curr = conn.cursor()
         curr.execute(__SELECT_MEETING_DAILY_BY_USERNAME, (chat_id, username,))
         return curr.fetchall()
@@ -215,8 +205,7 @@ def select_meetings_daily_by_username(chat_id, username):
 
 def select_meetings_weekly_by_username(chat_id, username):
     with sqlite3.connect(__DATABASE_FILE, check_same_thread=False) as conn:
-        conn.row_factory = lambda cursor, row: MeetingWeekly(row[0], row[1], row[2], row[3], row[4], row[5], row[6],
-                                                             row[7], row[8])
+        conn.row_factory = MeetingWeekly.row_factory()
         curr = conn.cursor()
         curr.execute(__SELECT_MEETING_WEEKLY_BY_USERNAME, (chat_id, username,))
         return curr.fetchall()
@@ -224,8 +213,7 @@ def select_meetings_weekly_by_username(chat_id, username):
 
 def select_meetings_weekly_double_by_username(chat_id, username):
     with sqlite3.connect(__DATABASE_FILE, check_same_thread=False) as conn:
-        conn.row_factory = lambda cursor, row: MeetingWeeklyDouble(row[0], row[1], row[2], row[3], row[4], row[5],
-                                                                   row[6], row[7], row[8], row[9])
+        conn.row_factory = MeetingWeeklyDouble.row_factory()
         curr = conn.cursor()
         curr.execute(__SELECT_MEETING_WEEKLY_DOUBLE_BY_USERNAME, (chat_id, username,))
         return curr.fetchall()
@@ -261,8 +249,7 @@ def delete_meeting_weekly_double(id_):
 
 def select_meetings_daily_not_notified():
     with sqlite3.connect(__DATABASE_FILE, check_same_thread=False) as conn:
-        conn.row_factory = lambda cursor, row: MeetingDaily(row[0], row[1], row[2], row[3], row[4], row[5], row[6],
-                                                            row[7])
+        conn.row_factory = MeetingDaily.row_factory()
         curr = conn.cursor()
         curr.execute(__SELECT_MEETING_DAILY_NOT_NOTIFIED)
         return curr.fetchall()
@@ -270,8 +257,7 @@ def select_meetings_daily_not_notified():
 
 def select_meetings_weekly_not_notified():
     with sqlite3.connect(__DATABASE_FILE, check_same_thread=False) as conn:
-        conn.row_factory = lambda cursor, row: MeetingWeekly(row[0], row[1], row[2], row[3], row[4], row[5], row[6],
-                                                             row[7], row[8])
+        conn.row_factory = MeetingWeekly.row_factory()
         curr = conn.cursor()
         curr.execute(__SELECT_MEETING_WEEKLY_NOT_NOTIFIED)
         return curr.fetchall()
@@ -279,8 +265,7 @@ def select_meetings_weekly_not_notified():
 
 def select_meetings_weekly_double_not_notified():
     with sqlite3.connect(__DATABASE_FILE, check_same_thread=False) as conn:
-        conn.row_factory = lambda cursor, row: MeetingWeeklyDouble(row[0], row[1], row[2], row[3], row[4], row[5],
-                                                                   row[6], row[7], row[8], row[9])
+        conn.row_factory = MeetingWeeklyDouble.row_factory()
         curr = conn.cursor()
         curr.execute(__SELECT_MEETING_WEEKLY_DOUBLE_NOT_NOTIFIED)
         return curr.fetchall()
@@ -288,8 +273,7 @@ def select_meetings_weekly_double_not_notified():
 
 def select_meetings_for_notify_by_day():
     with sqlite3.connect(__DATABASE_FILE, check_same_thread=False) as conn:
-        conn.row_factory = lambda cursor, row: Meeting(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7],
-                                                       row[8])
+        conn.row_factory = Meeting.row_factory()
         curr = conn.cursor()
         curr.execute(__SELECT_MEETING_FOR_NOTIFY_DAY)
         return curr.fetchall()
@@ -297,8 +281,7 @@ def select_meetings_for_notify_by_day():
 
 def select_meetings_for_notify_by_min():
     with sqlite3.connect(__DATABASE_FILE, check_same_thread=False) as conn:
-        conn.row_factory = lambda cursor, row: Meeting(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7],
-                                                       row[8])
+        conn.row_factory = Meeting.row_factory()
         curr = conn.cursor()
         curr.execute(__SELECT_MEETING_FOR_NOTIFY_MIN)
         return curr.fetchall()

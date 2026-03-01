@@ -11,10 +11,11 @@ class Chat:
 
 
 class Meeting:
-    def __init__(self, id_, chat_id, username, place, description, date_time, notify_lag_min,
+    def __init__(self, id_, chat_id, chat_title, username, place, description, date_time, notify_lag_min,
                  is_notified_day, is_notified_min):
         self.id_ = id_
         self.chat_id = chat_id
+        self.chat_title = chat_title
         self.username = username
         self.place = place
         self.description = description
@@ -22,6 +23,12 @@ class Meeting:
         self.notify_lag_min = notify_lag_min
         self.is_notified_day = bool(int(is_notified_day))
         self.is_notified_min = bool(int(is_notified_min))
+
+    @staticmethod
+    def row_factory():
+        return lambda cursor, row: Meeting(
+            row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[9]
+        )
 
     def get_notify_text(self):
         return (f'Напоминание о встрече 👀\n'
@@ -38,17 +45,28 @@ class Meeting:
                 f'Описание: {kwargs["description"]}\n\n'
                 f'Directed by @{kwargs["username"]}')
 
+    def get_view_with_chat_title(self):
+        return f'{self.chat_title}. Одиночная - {self.date_time}'
+
+    def get_view_short(self):
+        return f'Одиночная, {self.date_time}'
+
 
 class MeetingDaily:
-    def __init__(self, id_, chat_id, username, place, description, time_, notify_lag_min, is_notified):
+    def __init__(self, id_, chat_id, chat_title, username, place, description, time_, notify_lag_min, is_notified):
         self.id_ = id_
         self.chat_id = chat_id
+        self.chat_title = chat_title
         self.username = username
         self.place = place
         self.description = description
         self.time_ = time_
         self.notify_lag_min = notify_lag_min
         self.is_notified = bool(int(is_notified))
+
+    @staticmethod
+    def row_factory():
+        return lambda cursor, row: MeetingDaily(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8])
 
     def get_notify_text(self):
         return (f'Напоминание о встрече 👀\n'
@@ -66,11 +84,18 @@ class MeetingDaily:
                 f'Лаг оповещения в минутах: {kwargs["notify_lag_min"]}\n\n'
                 f'Directed by @{kwargs["username"]}')
 
+    def get_view_with_chat_title(self):
+        return f'{self.chat_title}. Ежедневная, в {self.time_}'
+
+    def get_view_short(self):
+        return f'Ежедневная, в {self.time_}'
+
 
 class MeetingWeekly:
-    def __init__(self, id_, chat_id, username, place, description, day, time_, notify_lag_min, is_notified):
+    def __init__(self, id_, chat_id, chat_title, username, place, description, day, time_, notify_lag_min, is_notified):
         self.id_ = id_
         self.chat_id = chat_id
+        self.chat_title = chat_title
         self.username = username
         self.place = place
         self.description = description
@@ -78,6 +103,12 @@ class MeetingWeekly:
         self.time_ = time_
         self.notify_lag_min = notify_lag_min
         self.is_notified = bool(int(is_notified))
+
+    @staticmethod
+    def row_factory():
+        return lambda cursor, row: MeetingWeekly(
+            row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[9]
+        )
 
     def get_notify_text(self):
         return (f'Напоминание встрече 👀\n'
@@ -96,6 +127,9 @@ class MeetingWeekly:
             5: 'По пятницам'
         }[day]
 
+    def get_day_string(self):
+        return MeetingWeekly.define_day_string(self.day)
+
     @staticmethod
     def get_added_text(kwargs):
         return (f'Добавлена встреча 👻\n'
@@ -105,11 +139,19 @@ class MeetingWeekly:
                 f'Лаг оповещения в минутах: {kwargs["notify_lag_min"]}\n\n'
                 f'Directed by @{kwargs["username"]}')
 
+    def get_view_with_chat_title(self):
+        return f'{self.chat_title}. {self.get_day_string()}, в {self.time_}'
+
+    def get_view_short(self):
+        return f'{self.get_day_string()}, в {self.time_}'
+
 
 class MeetingWeeklyDouble:
-    def __init__(self, id_, chat_id, username, place, description, is_even, day, time_, notify_lag_min, is_notified):
+    def __init__(self, id_, chat_id, chat_title, username, place, description, is_even, day, time_,
+                 notify_lag_min, is_notified):
         self.id_ = id_
         self.chat_id = chat_id
+        self.chat_title = chat_title
         self.username = username
         self.place = place
         self.description = description
@@ -118,6 +160,12 @@ class MeetingWeeklyDouble:
         self.time_ = time_
         self.notify_lag_min = notify_lag_min
         self.is_notified = bool(int(is_notified))
+
+    @staticmethod
+    def row_factory():
+        return lambda cursor, row: MeetingWeeklyDouble(
+            row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10]
+        )
 
     def get_notify_text(self):
         return (f'Напоминание о встрече 👀\n'
@@ -147,6 +195,9 @@ class MeetingWeeklyDouble:
             5: f'По {even_string} пятницам'
         }[day]
 
+    def get_day_string(self):
+        return MeetingWeeklyDouble.define_day_string(self.is_even, self.day)
+
     @staticmethod
     def get_added_text(is_even, kwargs):
         return (f'Добавлена встреча 🐣\n'
@@ -156,3 +207,9 @@ class MeetingWeeklyDouble:
                 f'Описание: {kwargs["description"]}\n'
                 f'Лаг оповещения в минутах: {kwargs["notify_lag_min"]}\n\n'
                 f'Directed by @{kwargs["username"]}')
+
+    def get_view_with_chat_title(self):
+        return f'{self.chat_title}. {self.get_day_string()}, в {self.time_}'
+
+    def get_view_short(self):
+        return f'{self.get_day_string()}, в {self.time_}'

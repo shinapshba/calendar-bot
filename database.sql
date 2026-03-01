@@ -18,6 +18,7 @@ CREATE TABLE chat (
 CREATE TABLE meeting (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     chat_id         TEXT    NOT NULL,
+    chat_title      TEXT    NOT NULL,
     username        TEXT    NOT NULL,
     place           TEXT,
     description     TEXT,
@@ -30,6 +31,7 @@ CREATE TABLE meeting (
 CREATE TABLE meeting_daily (
     id             INTEGER PRIMARY KEY AUTOINCREMENT,
     chat_id        TEXT    NOT NULL,
+    chat_title      TEXT    NOT NULL,
     username       TEXT    NOT NULL,
     place          TEXT,
     description    TEXT,
@@ -41,6 +43,7 @@ CREATE TABLE meeting_daily (
 CREATE TABLE meeting_weekly (
     id             INTEGER PRIMARY KEY AUTOINCREMENT,
     chat_id        TEXT    NOT NULL,
+    chat_title     TEXT    NOT NULL,
     username       TEXT    NOT NULL,
     place          TEXT,
     description    TEXT,
@@ -53,6 +56,7 @@ CREATE TABLE meeting_weekly (
 CREATE TABLE meeting_weekly_double (
     id             INTEGER PRIMARY KEY AUTOINCREMENT,
     chat_id        TEXT    NOT NULL,
+    chat_title     TEXT    NOT NULL,
     username       TEXT    NOT NULL,
     place          TEXT,
     description    TEXT,

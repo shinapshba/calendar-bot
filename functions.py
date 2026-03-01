@@ -89,19 +89,22 @@ class MeetingFunctions:
             meetings_daily = model.select_meetings_daily(meeting_chat_id)
             meetings_weekly = model.select_meetings_weekly(meeting_chat_id)
             meetings_weekly_double = model.select_meetings_weekly_double(meeting_chat_id)
+
         if len(future_meetings) + len(meetings_daily) + len(meetings_weekly) + len(meetings_weekly_double) == 0:
             self.bot.send_message(call.message.chat.id, 'Нет встреч для этого чата 💅')
+            return
+        text = 'Встречи:\n'
+        if call.message.chat.type == 'private':
+            text += '\n'.join(list(map(lambda fm: f' * {fm.get_view_with_chat_title()}', future_meetings)))
+            text += '\n'.join(list(map(lambda md: f' * {md.get_view_with_chat_title()}', meetings_daily)))
+            text += '\n'.join(list(map(lambda mw: f' * {mw.get_view_with_chat_title()}', meetings_weekly)))
+            text += '\n'.join(list(map(lambda mwd: f' * {mwd.get_view_with_chat_title()}', meetings_weekly_double)))
         else:
-            text = 'Встречи:\n'
-            for fm in future_meetings:
-                text += f' * {fm.date_time}\n'
-            for md in meetings_daily:
-                text += f' * Ежедневно, в {md.time_}\n'
-            for mw in meetings_weekly:
-                text += f' * {MeetingWeekly.define_day_string(mw.day)}, в {mw.time_}\n'
-            for mwd in meetings_weekly_double:
-                text += f' * {MeetingWeeklyDouble.define_day_string(mwd.is_even, mwd.day)}, в {mwd.time_}\n'
-            self.bot.send_message(call.message.chat.id, text)
+            text += '\n'.join(list(map(lambda fm: f' * {fm.get_view_short()}', future_meetings)))
+            text += '\n'.join(list(map(lambda md: f' * {md.get_view_short()}', meetings_daily)))
+            text += '\n'.join(list(map(lambda mw: f' * {mw.get_view_short()}', meetings_weekly)))
+            text += '\n'.join(list(map(lambda mwd: f' * {mwd.get_view_short()}', meetings_weekly_double)))
+        self.bot.send_message(call.message.chat.id, text)
 
     def delete(self, call):
         if call.message.chat.type != 'private':
@@ -121,16 +124,17 @@ class MeetingFunctions:
         markup = InlineKeyboardMarkup()
         markup.row_width = 6
         for md in meetings_daily:
-            markup.add(InlineKeyboardButton(text=f'Ежедневная, {md.time_}',
+            markup.add(InlineKeyboardButton(text=md.get_short_view(),
                                             callback_data=f'delete_meeting_id_daily{md.id_}'))
         for mw in meetings_weekly:
-            markup.add(InlineKeyboardButton(text=f'{MeetingWeekly.define_day_string(mw.day)} в {mw.time_}',
+            markup.add(InlineKeyboardButton(text=mw.get_short_view(),
                                             callback_data=f'delete_meeting_id_weekly{mw.id_}'))
         for mwd in meetings_weekly_double:
-            button_text = f'{MeetingWeeklyDouble.define_day_string(mwd.is_even, mwd.day)} в {mwd.time_}'
-            markup.add(InlineKeyboardButton(text=button_text, callback_data=f'delete_meeting_id_doubleweekly{mwd.id_}'))
+            markup.add(InlineKeyboardButton(text=mwd.get_short_view(),
+                                            callback_data=f'delete_meeting_id_doubleweekly{mwd.id_}'))
         for m in future_meetings:
-            markup.add(InlineKeyboardButton(text=m.date_time, callback_data=f'delete_meeting_id{m.id_}'))
+            markup.add(InlineKeyboardButton(text=m.get_short_view(),
+                                            callback_data=f'delete_meeting_id{m.id_}'))
         add_cancel_button(markup)
         self.bot.send_message(message.chat.id, 'Выберите встречу', reply_markup=markup)
 
@@ -243,17 +247,22 @@ class MeetingFunctions:
         self.__create_meeting(message, **kwargs)
 
     def __create_meeting(self, message, **kwargs):
+        meeting_chat = self.bot.get_chat(kwargs['meeting_chat_id'])
+        if meeting_chat.type == 'private':
+            chat_title = 'Личная'
+        else:
+            chat_title = meeting_chat.title
         if 'schedule' not in kwargs:
-            model.insert_meeting(kwargs['meeting_chat_id'], kwargs['username'], kwargs['place'],
+            model.insert_meeting(kwargs['meeting_chat_id'], chat_title, kwargs['username'], kwargs['place'],
                                  kwargs['description'], f'{kwargs["date"]} {kwargs["time"]}',
                                  kwargs['notify_lag_min'])
             self.bot.send_message(kwargs['meeting_chat_id'], Meeting.get_added_text(kwargs))
         elif kwargs['schedule'] == 'daily':
-            model.insert_meeting_daily(kwargs['meeting_chat_id'], kwargs['username'], kwargs['place'],
+            model.insert_meeting_daily(kwargs['meeting_chat_id'], chat_title, kwargs['username'], kwargs['place'],
                                        kwargs['description'], kwargs['time'], kwargs['notify_lag_min'])
             self.bot.send_message(kwargs['meeting_chat_id'], MeetingDaily.get_added_text(kwargs))
         elif kwargs['schedule'] == 'weekly':
-            model.insert_meeting_weekly(kwargs['meeting_chat_id'], kwargs['username'], kwargs['place'],
+            model.insert_meeting_weekly(kwargs['meeting_chat_id'], chat_title, kwargs['username'], kwargs['place'],
                                         kwargs['description'], kwargs['day'], kwargs['time'], kwargs['notify_lag_min'])
             self.bot.send_message(kwargs['meeting_chat_id'], MeetingWeekly.get_added_text(kwargs))
         elif kwargs['schedule'] == 'doubleweekly':
@@ -267,8 +276,8 @@ class MeetingFunctions:
                     is_even = 0
                 else:
                     is_even = 1
-            model.insert_meeting_weekly_double(kwargs['meeting_chat_id'], kwargs['username'], kwargs['place'],
-                                               kwargs['description'], is_even, kwargs['day'],
+            model.insert_meeting_weekly_double(kwargs['meeting_chat_id'], chat_title, kwargs['username'],
+                                               kwargs['place'], kwargs['description'], is_even, kwargs['day'],
                                                kwargs['time'], kwargs['notify_lag_min'])
             self.bot.send_message(kwargs['meeting_chat_id'], MeetingWeeklyDouble.get_added_text(is_even, kwargs))
         if message.chat.type == 'private':
