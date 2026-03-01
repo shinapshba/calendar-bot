@@ -30,9 +30,8 @@ __INSERT_MEETING = f'INSERT INTO meeting ({__MEETING_BASE_COLS}, date_time) VALU
 __INSERT_MEETING_DAILY = f'INSERT INTO meeting_daily ({__MEETING_BASE_COLS}, time) VALUES (?, ?, ?, ?, ?, ?, ?)'
 __INSERT_MEETING_WEEKLY = f'''INSERT INTO meeting_weekly ({__MEETING_BASE_COLS}, day, time) 
 VALUES (?, ?, ?, ?, ?, ?, ?, ?)'''
-__INSERT_MEETING_WEEKLY_DOUBLE = f'''INSERT INTO meeting_weekly_double ({__MEETING_BASE_COLS}, is_even, day, time) 
+__INSERT_MEETING_WEEKLY_DOUBLE = f'''INSERT INTO meeting_weekly_double ({__MEETING_BASE_COLS}, period, day, time) 
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'''
-
 
 __SELECT_MEETING_DAILY_NOT_NOTIFIED = 'SELECT * from meeting_daily WHERE is_notified = 0'
 __SELECT_MEETING_WEEKLY_NOT_NOTIFIED = 'SELECT * from meeting_weekly WHERE is_notified = 0'

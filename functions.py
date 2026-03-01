@@ -96,18 +96,20 @@ class MeetingFunctions:
         if len(future_meetings) + len(meetings_daily) + len(meetings_weekly) + len(meetings_weekly_double) == 0:
             self.bot.send_message(call.message.chat.id, 'Нет встреч для этого чата 💅')
             return
-        text = 'Встречи:\n'
+
+        meeting_views = []
         if call.message.chat.type == 'private':
-            text += ''.join(list(map(lambda fm: f' * {fm.get_view_with_chat_title()}\n', future_meetings)))
-            text += ''.join(list(map(lambda md: f' * {md.get_view_with_chat_title()}\n', meetings_daily)))
-            text += ''.join(list(map(lambda mw: f' * {mw.get_view_with_chat_title()}\n', meetings_weekly)))
-            text += ''.join(list(map(lambda mwd: f' * {mwd.get_view_with_chat_title()}\n', meetings_weekly_double)))
+            meeting_views += list(map(lambda fm: f' * {fm.get_view_with_chat_title()}', future_meetings))
+            meeting_views += list(map(lambda md: f' * {md.get_view_with_chat_title()}', meetings_daily))
+            meeting_views += list(map(lambda mw: f' * {mw.get_view_with_chat_title()}', meetings_weekly))
+            meeting_views += list(map(lambda mwd: f' * {mwd.get_view_with_chat_title()}', meetings_weekly_double))
         else:
-            text += ''.join(list(map(lambda fm: f' * {fm.get_view_short()}\n', future_meetings)))
-            text += ''.join(list(map(lambda md: f' * {md.get_view_short()}\n', meetings_daily)))
-            text += ''.join(list(map(lambda mw: f' * {mw.get_view_short()}\n', meetings_weekly)))
-            text += ''.join(list(map(lambda mwd: f' * {mwd.get_view_short()}\n', meetings_weekly_double)))
-        self.bot.send_message(call.message.chat.id, text)
+            meeting_views += list(map(lambda fm: f' * {fm.get_view_short()}', future_meetings))
+            meeting_views += list(map(lambda md: f' * {md.get_view_short()}', meetings_daily))
+            meeting_views += list(map(lambda mw: f' * {mw.get_view_short()}', meetings_weekly))
+            meeting_views += list(map(lambda mwd: f' * {mwd.get_view_short()}', meetings_weekly_double))
+        meeting_views.sort()
+        self.bot.send_message(call.message.chat.id, 'Встречи:\n' + '\n'.join(meeting_views))
 
     def delete(self, call):
         if call.message.chat.type != 'private':
@@ -126,18 +128,16 @@ class MeetingFunctions:
             return
         markup = InlineKeyboardMarkup()
         markup.row_width = 6
+        def build_inline_button(meeting, prefix):
+            return InlineKeyboardButton(text=meeting.get_view_short(), callback_data=f'{prefix}{meeting.id_}')
         for md in meetings_daily:
-            markup.add(InlineKeyboardButton(text=md.get_short_view(),
-                                            callback_data=f'delete_meeting_id_daily{md.id_}'))
+            markup.add(build_inline_button(md, 'delete_meeting_id_daily'))
         for mw in meetings_weekly:
-            markup.add(InlineKeyboardButton(text=mw.get_short_view(),
-                                            callback_data=f'delete_meeting_id_weekly{mw.id_}'))
+            markup.add(build_inline_button(mw, 'delete_meeting_id_weekly'))
         for mwd in meetings_weekly_double:
-            markup.add(InlineKeyboardButton(text=mwd.get_short_view(),
-                                            callback_data=f'delete_meeting_id_doubleweekly{mwd.id_}'))
+            markup.add(build_inline_button(mwd, 'delete_meeting_id_doubleweekly'))
         for m in future_meetings:
-            markup.add(InlineKeyboardButton(text=m.get_short_view(),
-                                            callback_data=f'delete_meeting_id{m.id_}'))
+            markup.add(build_inline_button(m, 'delete_meeting_id'))
         add_cancel_button(markup)
         self.bot.send_message(message.chat.id, 'Выберите встречу', reply_markup=markup)
 
@@ -150,7 +150,7 @@ class MeetingFunctions:
             model.delete_meeting_weekly_double(meeting_id.replace('_doubleweekly', ''))
         else:
             model.delete_meeting(meeting_id)
-        self.bot.send_message(message.chat.id, 'Удалил ✅')
+        self.bot.send_message(message.chat.id, 'Удалил встречу ✅')
 
     def add(self, call):
         if call.message.chat.type != 'private':
