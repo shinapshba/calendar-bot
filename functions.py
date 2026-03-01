@@ -53,6 +53,9 @@ class AdminFunctions:
     def show_users(self, call):
         chats = model.select_all_chats()
         text = '\n'.join(sorted(list(map(lambda c: c.to_string(), chats))))
+        if len(text) == 0:
+            self.bot.send_message(call.message.chat.id, 'Список пользователей пуст')
+            return
         self.bot.send_message(call.message.chat.id, text)
 
 
