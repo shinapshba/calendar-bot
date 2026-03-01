@@ -4,6 +4,8 @@ from dto import Chat, Meeting, MeetingDaily, MeetingWeekly, MeetingWeeklyDouble
 
 __DATABASE_FILE = 'database.db'
 
+__MEETING_BASE_COLS = 'chat_id, chat_title, username, place, description, notify_lag_min'
+
 __SELECT_TOKEN = 'SELECT data FROM token'
 __IS_SUPER_USER = 'SELECT EXISTS (SELECT 1 FROM super_user WHERE username=?)'
 __SELECT_ALL_CHATS = 'SELECT * FROM chat'
@@ -21,16 +23,16 @@ __DELETE_MEETING_DAILY = 'DELETE FROM meeting_daily WHERE id = ?'
 __DELETE_MEETING_WEEKLY = 'DELETE FROM meeting_weekly WHERE id = ?'
 __DELETE_MEETING_WEEKLY_DOUBLE = 'DELETE FROM meeting_weekly_double WHERE id = ?'
 
-__UPSERT_CHAT = ('insert into chat(chat_id, username, title) values(?, ?, ?) on conflict(chat_id) do update '
-                 'set username=excluded.username, title=excluded.title')
-__INSERT_MEETING_DAILY = ('INSERT INTO meeting_daily (chat_id, chat_title, username, place, description, time, '
-                          'notify_lag_min) VALUES (?, ?, ?, ?, ?, ?, ?)')
-__INSERT_MEETING_WEEKLY = ('INSERT INTO meeting_weekly (chat_id, chat_title, username, place, description, day, time, '
-                           'notify_lag_min) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
-__INSERT_MEETING_WEEKLY_DOUBLE = ('INSERT INTO meeting_weekly_double (chat_id, chat_title, username, place, '
-                                  'description, is_even, day, time, notify_lag_min) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
-__INSERT_MEETING = ('INSERT INTO meeting (chat_id, chat_title, username, place, description, date_time, '
-                    'notify_lag_min) VALUES (?, ?, ?, ?, ?, ?, ?)')
+__UPSERT_CHAT = '''INSERT INTO chat(chat_id, username, title) VALUES(?, ?, ?) ON CONFLICT(chat_id) DO UPDATE SET 
+username=excluded.username, title=excluded.title'''
+
+__INSERT_MEETING = f'INSERT INTO meeting ({__MEETING_BASE_COLS}, date_time) VALUES (?, ?, ?, ?, ?, ?, ?)'
+__INSERT_MEETING_DAILY = f'INSERT INTO meeting_daily ({__MEETING_BASE_COLS}, time) VALUES (?, ?, ?, ?, ?, ?, ?)'
+__INSERT_MEETING_WEEKLY = f'''INSERT INTO meeting_weekly ({__MEETING_BASE_COLS}, day, time) 
+VALUES (?, ?, ?, ?, ?, ?, ?, ?)'''
+__INSERT_MEETING_WEEKLY_DOUBLE = f'''INSERT INTO meeting_weekly_double ({__MEETING_BASE_COLS}, is_even, day, time) 
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+
 
 __SELECT_MEETING_DAILY_NOT_NOTIFIED = 'SELECT * from meeting_daily WHERE is_notified = 0'
 __SELECT_MEETING_WEEKLY_NOT_NOTIFIED = 'SELECT * from meeting_weekly WHERE is_notified = 0'
@@ -83,34 +85,34 @@ def select_all_chats():
         return curr.fetchall()
 
 
-def insert_meeting(chat_id, chat_title, username, place, description, date_time, notify_lag_min):
+def insert_meeting(chat_id, chat_title, username, place, description, notify_lag_min, date_time):
     with sqlite3.connect(__DATABASE_FILE, check_same_thread=False) as conn:
         curr = conn.cursor()
-        parameters = (chat_id, chat_title, username, place, description, date_time, notify_lag_min,)
+        parameters = (chat_id, chat_title, username, place, description, notify_lag_min, date_time,)
         curr.execute(__INSERT_MEETING, parameters)
         conn.commit()
 
 
-def insert_meeting_daily(chat_id, chat_title, username, place, description, time, notify_lag_min):
+def insert_meeting_daily(chat_id, chat_title, username, place, description, notify_lag_min, time):
     with sqlite3.connect(__DATABASE_FILE, check_same_thread=False) as conn:
         curr = conn.cursor()
-        parameters = (chat_id, chat_title, username, place, description, time, notify_lag_min,)
+        parameters = (chat_id, chat_title, username, place, description, notify_lag_min, time,)
         curr.execute(__INSERT_MEETING_DAILY, parameters)
         conn.commit()
 
 
-def insert_meeting_weekly(chat_id, chat_title, username, place, description, day, time, notify_lag_min):
+def insert_meeting_weekly(chat_id, chat_title, username, place, description, notify_lag_min, day, time):
     with sqlite3.connect(__DATABASE_FILE, check_same_thread=False) as conn:
         curr = conn.cursor()
-        parameters = (chat_id, chat_title, username, place, description, day, time, notify_lag_min,)
+        parameters = (chat_id, chat_title, username, place, description, notify_lag_min, day, time,)
         curr.execute(__INSERT_MEETING_WEEKLY, parameters)
         conn.commit()
 
 
-def insert_meeting_weekly_double(chat_id, chat_title, username, place, description, period, day, time, notify_lag_min):
+def insert_meeting_weekly_double(chat_id, chat_title, username, place, description, notify_lag_min, period, day, time):
     with sqlite3.connect(__DATABASE_FILE, check_same_thread=False) as conn:
         curr = conn.cursor()
-        parameters = (chat_id, chat_title, username, place, description, period, day, time, notify_lag_min,)
+        parameters = (chat_id, chat_title, username, place, description, notify_lag_min, period, day, time,)
         curr.execute(__INSERT_MEETING_WEEKLY_DOUBLE, parameters)
         conn.commit()
 

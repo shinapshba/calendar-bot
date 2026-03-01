@@ -257,16 +257,16 @@ class MeetingFunctions:
             chat_title = meeting_chat.title
         if 'schedule' not in kwargs:
             model.insert_meeting(kwargs['meeting_chat_id'], chat_title, kwargs['username'], kwargs['place'],
-                                 kwargs['description'], f'{kwargs["date"]} {kwargs["time"]}',
-                                 kwargs['notify_lag_min'])
+                                 kwargs['description'], kwargs['notify_lag_min'],
+                                 f'{kwargs["date"]} {kwargs["time"]}')
             self.bot.send_message(kwargs['meeting_chat_id'], Meeting.get_added_text(kwargs))
         elif kwargs['schedule'] == 'daily':
             model.insert_meeting_daily(kwargs['meeting_chat_id'], chat_title, kwargs['username'], kwargs['place'],
-                                       kwargs['description'], kwargs['time'], kwargs['notify_lag_min'])
+                                       kwargs['description'], kwargs['notify_lag_min'], kwargs['time'])
             self.bot.send_message(kwargs['meeting_chat_id'], MeetingDaily.get_added_text(kwargs))
         elif kwargs['schedule'] == 'weekly':
             model.insert_meeting_weekly(kwargs['meeting_chat_id'], chat_title, kwargs['username'], kwargs['place'],
-                                        kwargs['description'], kwargs['day'], kwargs['time'], kwargs['notify_lag_min'])
+                                        kwargs['description'], kwargs['notify_lag_min'], kwargs['day'], kwargs['time'])
             self.bot.send_message(kwargs['meeting_chat_id'], MeetingWeekly.get_added_text(kwargs))
         elif kwargs['schedule'] == 'doubleweekly':
             if utils.is_current_week_even():
@@ -280,8 +280,8 @@ class MeetingFunctions:
                 else:
                     is_even = 1
             model.insert_meeting_weekly_double(kwargs['meeting_chat_id'], chat_title, kwargs['username'],
-                                               kwargs['place'], kwargs['description'], is_even, kwargs['day'],
-                                               kwargs['time'], kwargs['notify_lag_min'])
+                                               kwargs['place'], kwargs['description'], kwargs['notify_lag_min'],
+                                               is_even, kwargs['day'], kwargs['time'])
             self.bot.send_message(kwargs['meeting_chat_id'], MeetingWeeklyDouble.get_added_text(is_even, kwargs))
         if message.chat.type == 'private':
             self.bot.send_message(message.chat.id, text=f'Запланировал ✅')
