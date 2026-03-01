@@ -1,20 +1,24 @@
 PRAGMA foreign_keys = off;
 BEGIN TRANSACTION;
 
-CREATE TABLE IF NOT EXISTS super_user (
+DROP TABLE IF EXISTS super_user;
+CREATE TABLE super_user (
     username    TEXT NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS token (
+DROP TABLE IF EXISTS token;
+CREATE TABLE token (
     data TEXT NOT NULL
 );
 
+DROP TABLE IF EXISTS chat;
 CREATE TABLE chat (
     chat_id     TEXT NOT NULL UNIQUE,
     username    TEXT,
     title       TEXT
 );
 
+DROP TABLE IF EXISTS meeting;
 CREATE TABLE meeting (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     chat_id         TEXT    NOT NULL,
@@ -22,12 +26,13 @@ CREATE TABLE meeting (
     username        TEXT    NOT NULL,
     place           TEXT,
     description     TEXT,
-    date_time       TEXT,
     notify_lag_min  INTEGER NOT NULL,
+    date_time       TEXT,
     is_notified_day INTEGER NOT NULL DEFAULT (0),
     is_notified_min INTEGER NOT NULL DEFAULT (0)
 );
 
+DROP TABLE IF EXISTS meeting_daily;
 CREATE TABLE meeting_daily (
     id             INTEGER PRIMARY KEY AUTOINCREMENT,
     chat_id        TEXT    NOT NULL,
@@ -35,11 +40,12 @@ CREATE TABLE meeting_daily (
     username       TEXT    NOT NULL,
     place          TEXT,
     description    TEXT,
-    time           TEXT    NOT NULL,
     notify_lag_min INTEGER NOT NULL,
+    time           TEXT    NOT NULL,
     is_notified    INTEGER DEFAULT (0)
 );
 
+DROP TABLE IF EXISTS meeting_weekly;
 CREATE TABLE meeting_weekly (
     id             INTEGER PRIMARY KEY AUTOINCREMENT,
     chat_id        TEXT    NOT NULL,
@@ -47,12 +53,13 @@ CREATE TABLE meeting_weekly (
     username       TEXT    NOT NULL,
     place          TEXT,
     description    TEXT,
+    notify_lag_min INTEGER NOT NULL,
     day            INTEGER NOT NULL,
     time           TEXT    NOT NULL,
-    notify_lag_min INTEGER NOT NULL,
     is_notified    INTEGER DEFAULT (0)
 );
 
+DROP TABLE IF EXISTS meeting_weekly_double;
 CREATE TABLE meeting_weekly_double (
     id             INTEGER PRIMARY KEY AUTOINCREMENT,
     chat_id        TEXT    NOT NULL,
@@ -60,10 +67,10 @@ CREATE TABLE meeting_weekly_double (
     username       TEXT    NOT NULL,
     place          TEXT,
     description    TEXT,
+    notify_lag_min INTEGER NOT NULL,
     period         INTEGER NOT NULL,
     day            INTEGER NOT NULL,
     time           TEXT    NOT NULL,
-    notify_lag_min INTEGER NOT NULL,
     is_notified    INTEGER DEFAULT (0)
 );
 
