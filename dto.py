@@ -54,7 +54,7 @@ class Meeting(MeetingBase):
                 f'Directed by @{kwargs["username"]}')
 
     def get_view_with_chat_title(self):
-        return f'{self.chat_title}. Одиночная - {self.date_time}'
+        return f'{self.chat_title}. Одиночная, {self.date_time}'
 
     def get_view_short(self):
         return f'Одиночная, {self.date_time}'

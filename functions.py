@@ -98,15 +98,15 @@ class MeetingFunctions:
             return
         text = 'Встречи:\n'
         if call.message.chat.type == 'private':
-            text += '\n'.join(list(map(lambda fm: f' * {fm.get_view_with_chat_title()}', future_meetings)))
-            text += '\n'.join(list(map(lambda md: f' * {md.get_view_with_chat_title()}', meetings_daily)))
-            text += '\n'.join(list(map(lambda mw: f' * {mw.get_view_with_chat_title()}', meetings_weekly)))
-            text += '\n'.join(list(map(lambda mwd: f' * {mwd.get_view_with_chat_title()}', meetings_weekly_double)))
+            text += ''.join(list(map(lambda fm: f' * {fm.get_view_with_chat_title()}\n', future_meetings)))
+            text += ''.join(list(map(lambda md: f' * {md.get_view_with_chat_title()}\n', meetings_daily)))
+            text += ''.join(list(map(lambda mw: f' * {mw.get_view_with_chat_title()}\n', meetings_weekly)))
+            text += ''.join(list(map(lambda mwd: f' * {mwd.get_view_with_chat_title()}\n', meetings_weekly_double)))
         else:
-            text += '\n'.join(list(map(lambda fm: f' * {fm.get_view_short()}', future_meetings)))
-            text += '\n'.join(list(map(lambda md: f' * {md.get_view_short()}', meetings_daily)))
-            text += '\n'.join(list(map(lambda mw: f' * {mw.get_view_short()}', meetings_weekly)))
-            text += '\n'.join(list(map(lambda mwd: f' * {mwd.get_view_short()}', meetings_weekly_double)))
+            text += ''.join(list(map(lambda fm: f' * {fm.get_view_short()}\n', future_meetings)))
+            text += ''.join(list(map(lambda md: f' * {md.get_view_short()}\n', meetings_daily)))
+            text += ''.join(list(map(lambda mw: f' * {mw.get_view_short()}\n', meetings_weekly)))
+            text += ''.join(list(map(lambda mwd: f' * {mwd.get_view_short()}\n', meetings_weekly_double)))
         self.bot.send_message(call.message.chat.id, text)
 
     def delete(self, call):
