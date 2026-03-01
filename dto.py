@@ -1,3 +1,6 @@
+from abc import ABC
+
+
 class Chat:
     def __init__(self, chat_id, username, title):
         self.chat_id = chat_id
@@ -10,17 +13,22 @@ class Chat:
         return f'Чат "{self.title}"'
 
 
-class Meeting:
-    def __init__(self, id_, chat_id, chat_title, username, place, description, date_time, notify_lag_min,
-                 is_notified_day, is_notified_min):
+class MeetingBase(ABC):
+    def __init__(self, id_, chat_id, chat_title, username, place, description, notify_lag_min):
         self.id_ = id_
         self.chat_id = chat_id
         self.chat_title = chat_title
         self.username = username
         self.place = place
         self.description = description
-        self.date_time = date_time
         self.notify_lag_min = notify_lag_min
+
+
+class Meeting(MeetingBase):
+    def __init__(self, id_, chat_id, chat_title, username, place, description, notify_lag_min,
+                 date_time, is_notified_day, is_notified_min):
+        super().__init__(id_, chat_id, chat_title, username, place, description, notify_lag_min)
+        self.date_time = date_time
         self.is_notified_day = bool(int(is_notified_day))
         self.is_notified_min = bool(int(is_notified_min))
 
@@ -52,16 +60,11 @@ class Meeting:
         return f'Одиночная, {self.date_time}'
 
 
-class MeetingDaily:
-    def __init__(self, id_, chat_id, chat_title, username, place, description, time_, notify_lag_min, is_notified):
-        self.id_ = id_
-        self.chat_id = chat_id
-        self.chat_title = chat_title
-        self.username = username
-        self.place = place
-        self.description = description
+class MeetingDaily(MeetingBase):
+    def __init__(self, id_, chat_id, chat_title, username, place, description, notify_lag_min,
+                 time_, is_notified):
+        super().__init__(id_, chat_id, chat_title, username, place, description, notify_lag_min)
         self.time_ = time_
-        self.notify_lag_min = notify_lag_min
         self.is_notified = bool(int(is_notified))
 
     @staticmethod
@@ -91,17 +94,12 @@ class MeetingDaily:
         return f'Ежедневная, в {self.time_}'
 
 
-class MeetingWeekly:
-    def __init__(self, id_, chat_id, chat_title, username, place, description, day, time_, notify_lag_min, is_notified):
-        self.id_ = id_
-        self.chat_id = chat_id
-        self.chat_title = chat_title
-        self.username = username
-        self.place = place
-        self.description = description
+class MeetingWeekly(MeetingBase):
+    def __init__(self, id_, chat_id, chat_title, username, place, description, notify_lag_min,
+                 day, time_, is_notified):
+        super().__init__(id_, chat_id, chat_title, username, place, description, notify_lag_min)
         self.day = int(day)
         self.time_ = time_
-        self.notify_lag_min = notify_lag_min
         self.is_notified = bool(int(is_notified))
 
     @staticmethod
@@ -146,19 +144,13 @@ class MeetingWeekly:
         return f'{self.get_day_string()}, в {self.time_}'
 
 
-class MeetingWeeklyDouble:
-    def __init__(self, id_, chat_id, chat_title, username, place, description, is_even, day, time_,
-                 notify_lag_min, is_notified):
-        self.id_ = id_
-        self.chat_id = chat_id
-        self.chat_title = chat_title
-        self.username = username
-        self.place = place
-        self.description = description
+class MeetingWeeklyDouble(MeetingBase):
+    def __init__(self, id_, chat_id, chat_title, username, place, description, notify_lag_min,
+                 is_even, day, time_, is_notified):
+        super().__init__(id_, chat_id, chat_title, username, place, description, notify_lag_min)
         self.is_even = bool(int(is_even))
         self.day = int(day)
         self.time_ = time_
-        self.notify_lag_min = notify_lag_min
         self.is_notified = bool(int(is_notified))
 
     @staticmethod
