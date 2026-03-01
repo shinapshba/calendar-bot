@@ -226,7 +226,7 @@ class MeetingFunctions:
             return
         if 'schedule' not in kwargs:
             if datetime.datetime.combine(
-                    date=kwargs['date'], time=datetime.datetime.strptime(ttime, '%H:%M').time()  # noqa
+                    date=kwargs['date'], time=datetime.datetime.strptime(time_, '%H:%M').time()
             ) < datetime.datetime.now():
                 raise_error(self.bot, message.chat.id, 'Нельзя запланировать на прошедшее время 😐')
         kwargs['time'] = time_
