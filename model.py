@@ -7,7 +7,7 @@ __DATABASE_FILE = 'database.db'
 __MEETING_BASE_COLS = 'chat_id, chat_title, username, place, description, notify_lag_min'
 
 __SELECT_TOKEN = 'SELECT data FROM token'
-__IS_SUPER_USER = 'SELECT EXISTS (SELECT 1 FROM super_user WHERE username=?)'
+__IS_SUPER_USER = 'SELECT COUNT(*) FROM super_user WHERE username=?'
 __SELECT_ALL_CHATS = 'SELECT * FROM chat'
 __SELECT_MEETING = 'SELECT * FROM meeting WHERE chat_id = ?'
 __SELECT_MEETING_DAILY = 'SELECT * FROM meeting_daily WHERE chat_id = ?'
@@ -59,7 +59,7 @@ def is_super_user(username):
     with sqlite3.connect(__DATABASE_FILE, check_same_thread=False) as conn:
         curr = conn.cursor()
         curr.execute(__IS_SUPER_USER, (username,))
-        return bool(curr.fetchone())
+        return curr.fetchone()[0] > 0
 
 
 def select_token():
