@@ -2,9 +2,9 @@ import sqlite3
 
 from dto import Chat
 
-DATABASE_FILE = './database.db'
 MEETING_BASE_COLS = 'chat_id, chat_title, username, place, description, notify_lag_min'
 
+__DATABASE_FILE = './database.db'
 __SELECT_TOKEN = 'SELECT data FROM token'
 __IS_SUPER_USER = 'SELECT COUNT(*) FROM super_user WHERE username=?'
 __SELECT_ALL_CHATS = 'SELECT * FROM chat'
@@ -20,7 +20,7 @@ def build_placeholders_with_params(ides):
 
 
 def execute(query, parameters=None):
-    with sqlite3.connect(DATABASE_FILE, check_same_thread=False) as conn:
+    with sqlite3.connect(__DATABASE_FILE, check_same_thread=False) as conn:
         curr = conn.cursor()
         if parameters is not None:
             curr.execute(query, parameters)
@@ -30,7 +30,7 @@ def execute(query, parameters=None):
 
 
 def fetchall(query, row_factory, parameters=None):
-    with sqlite3.connect(DATABASE_FILE, check_same_thread=False) as conn:
+    with sqlite3.connect(__DATABASE_FILE, check_same_thread=False) as conn:
         conn.row_factory = row_factory
         curr = conn.cursor()
         if parameters is not None:
@@ -41,7 +41,7 @@ def fetchall(query, row_factory, parameters=None):
 
 
 def fetchone(query, parameters=None):
-    with sqlite3.connect(DATABASE_FILE, check_same_thread=False) as conn:
+    with sqlite3.connect(__DATABASE_FILE, check_same_thread=False) as conn:
         curr = conn.cursor()
         if parameters is not None:
             curr.execute(query, parameters)
