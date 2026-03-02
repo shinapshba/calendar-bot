@@ -1,7 +1,8 @@
 import datetime
 import re
 
-from functions import MeetingFunctions
+from wrapper.functions import MeetingFunctions
+
 from telebot_calendar import Calendar, CallbackData, RUSSIAN_LANGUAGE
 
 calendar = Calendar(language=RUSSIAN_LANGUAGE)

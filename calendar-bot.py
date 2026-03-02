@@ -1,12 +1,16 @@
-import functions
-import callbacks
-import model
 import utils
 import telebot
 import schedule
 import datetime
 import time
 import traceback
+
+from wrapper import functions, callbacks
+from model import root as model_root
+from model import meeting as model_meeting
+from model import meeting_daily as model_meeting_daily
+from model import meeting_weekly as model_meeting_weekly
+from model import meeting_weekly_double as model_meeting_weekly_double
 
 from threading import Thread
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
@@ -21,7 +25,7 @@ class BotExceptionHandler(telebot.ExceptionHandler):
         return True
 
 
-bot = telebot.TeleBot(model.select_token(), exception_handler=BotExceptionHandler())
+bot = telebot.TeleBot(model_root.select_token(), exception_handler=BotExceptionHandler())
 
 bot.set_my_commands([
     telebot.types.BotCommand('/start', 'Начало работы'),
@@ -63,7 +67,7 @@ COMMANDS_ADMIN = {
 # region root commands
 @bot.message_handler(commands=['start'])
 def start(message):
-    model.upsert_chat(message.chat.id, message.chat.username, message.chat.title)
+    model_root.upsert_chat(message.chat.id, message.chat.username, message.chat.title)
     bot.send_message(message.chat.id, 'Все отлично! Можно работать 👌')
 
 
@@ -79,7 +83,7 @@ def meeting(message):
 
 @bot.message_handler(commands=['admin'])
 def admin(message):
-    if model.is_super_user(message.from_user.username):
+    if model_root.is_super_user(message.from_user.username):
         markup = InlineKeyboardMarkup()
         markup.row_width = 6
         for key, value in COMMANDS_ADMIN.items():
@@ -182,39 +186,39 @@ def handle_exceptions(func):
 
 @handle_exceptions
 def check_meetings_by_notification_day():
-    meetings = model.select_meetings_for_notify_by_day()
+    meetings = model_meeting.select_meetings_for_notify_by_day()
     meetings_to_notify = list(filter(lambda m_: utils.is_date_tomorrow(m_.date_time), meetings))
     for m in meetings_to_notify:
         bot.send_message(m.chat_id, m.get_notify_text())
-        model.update_meeting_notify_flag_day(m.id_)
+        model_meeting.update_meeting_notify_flag_day(m.id_)
 
 
 @handle_exceptions
 def check_meetings_by_notification_min():
-    meetings = model.select_meetings_for_notify_by_min()
+    meetings = model_meeting.select_meetings_for_notify_by_min()
     meetings_to_notify = list(
         filter(lambda m_: utils.is_datetime_delta_passed_minutes(m_.date_time, int(m_.notify_lag_min)), meetings)
     )
     for m in meetings_to_notify:
         bot.send_message(m.chat_id, m.get_notify_text())
-        model.update_meeting_notify_flag_min(m.id_)
+        model_meeting.update_meeting_notify_flag_min(m.id_)
 
 
 @handle_exceptions
 def check_meetings_daily():
-    meetings = model.select_meetings_daily_not_notified()
+    meetings = model_meeting_daily.select_meetings_daily_not_notified()
     meetings_to_notify = list(
         filter(lambda m_: utils.is_current_day_working() and
                           utils.is_time_delta_passed_minutes(m_.time_, int(m_.notify_lag_min)), meetings)
     )
     for m in meetings_to_notify:
         bot.send_message(m.chat_id, m.get_notify_text())
-        model.update_meetings_daily(m.id_)
+        model_meeting_daily.update_meetings_daily(m.id_)
 
 
 @handle_exceptions
 def check_meetings_weekly():
-    meetings = model.select_meetings_weekly_not_notified()
+    meetings = model_meeting_weekly.select_meetings_weekly_not_notified()
     meetings_to_notify = list(
         filter(
             lambda m_: utils.is_time_delta_passed_minutes(m_.time_, int(m_.notify_lag_min)) and
@@ -224,12 +228,12 @@ def check_meetings_weekly():
     )
     for m in meetings_to_notify:
         bot.send_message(m.chat_id, m.get_notify_text())
-        model.update_meetings_weekly(m.id_)
+        model_meeting_weekly.update_meetings_weekly(m.id_)
 
 
 @handle_exceptions
 def check_meetings_weekly_double():
-    meetings = model.select_meetings_weekly_double_not_notified()
+    meetings = model_meeting_weekly_double.select_meetings_weekly_double_not_notified()
     meetings_to_notify = list(
         filter(
             lambda m_: utils.is_current_week_even() == m_.is_even and
@@ -240,14 +244,14 @@ def check_meetings_weekly_double():
     )
     for m in meetings_to_notify:
         bot.send_message(m.chat_id, m.get_notify_text())
-        model.update_meetings_weekly_double(m.id_)
+        model_meeting_weekly_double.update_meetings_weekly_double(m.id_)
 
 
 @handle_exceptions
 def backup_meetings_daily():
-    model.backup_meetings_daily()
-    model.backup_meetings_weekly()
-    model.backup_meetings_weekly_double()
+    model_meeting_daily.backup_meetings_daily()
+    model_meeting_weekly.backup_meetings_weekly()
+    model_meeting_weekly_double.backup_meetings_weekly_double()
 
 
 def run_schedule():

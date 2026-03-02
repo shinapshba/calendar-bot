@@ -1,9 +1,13 @@
 import datetime
 import re
 import os
-import model
 import utils
 
+from model import root as m_root
+from model import meeting as m_meeting
+from model import meeting_daily as m_meeting_daily
+from model import meeting_weekly as m_meeting_weekly
+from model import meeting_weekly_double as m_meeting_weekly_double
 from dto import Meeting, MeetingDaily, MeetingWeekly, MeetingWeeklyDouble
 
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
@@ -23,7 +27,7 @@ def add_cancel_button(markup):
 
 
 def get_common_chats(bot, call):
-    chat_ides = list(map(lambda c: c.chat_id, model.select_all_chats()))
+    chat_ides = list(map(lambda c: c.chat_id, m_root.select_all_chats()))
     chats = list(map(lambda i: bot.get_chat(i), chat_ides))
     groups = list(filter(lambda c: c.type in ['group', 'supergroup'], chats))
     return list(filter(lambda group: bot.get_chat_member(group.id, call.from_user.id).status in
@@ -52,7 +56,7 @@ class AdminFunctions:
         self.bot = bot
 
     def show_users(self, call):
-        chats = model.select_all_chats()
+        chats = m_root.select_all_chats()
         text = '\n'.join(sorted(list(map(lambda c: c.to_string(), chats))))
         if len(text) == 0:
             self.bot.send_message(call.message.chat.id, 'Список пользователей пуст')
@@ -60,10 +64,10 @@ class AdminFunctions:
         self.bot.send_message(call.message.chat.id, text)
 
     def get_logs(self, call):
-        if not os.path.exists('./nohup.out'):
+        if not os.path.exists('../nohup.out'):
             self.bot.send_message(call.message.chat.id, 'Файл логов не найден')
             return
-        with open('./nohup.out', 'rb') as log_file:
+        with open('../nohup.out', 'rb') as log_file:
             self.bot.send_document(call.message.chat.id, log_file)
 
 
@@ -89,17 +93,17 @@ class MeetingFunctions:
         if meeting_chat_id == 'all':
             common_chat_ides = list(map(lambda c: c.id, get_common_chats(self.bot, call)))
             common_chat_ides.append(call.message.chat.id)
-            meetings = model.select_meetings_for_chats(common_chat_ides)
+            meetings = m_meeting.select_meetings_for_chats(common_chat_ides)
             future_meetings = list(filter(lambda m: utils.is_in_future(m.date_time), meetings))
-            meetings_daily = model.select_meetings_daily_for_chats(common_chat_ides)
-            meetings_weekly = model.select_meetings_weekly_for_chats(common_chat_ides)
-            meetings_weekly_double = model.select_meetings_weekly_double_for_chats(common_chat_ides)
+            meetings_daily = m_meeting_daily.select_meetings_daily_for_chats(common_chat_ides)
+            meetings_weekly = m_meeting_weekly.select_meetings_weekly_for_chats(common_chat_ides)
+            meetings_weekly_double = m_meeting_weekly_double.select_meetings_weekly_double_for_chats(common_chat_ides)
         else:
-            meetings = model.select_meetings(meeting_chat_id)
+            meetings = m_meeting.select_meetings(meeting_chat_id)
             future_meetings = list(filter(lambda m: utils.is_in_future(m.date_time), meetings))
-            meetings_daily = model.select_meetings_daily(meeting_chat_id)
-            meetings_weekly = model.select_meetings_weekly(meeting_chat_id)
-            meetings_weekly_double = model.select_meetings_weekly_double(meeting_chat_id)
+            meetings_daily = m_meeting_daily.select_meetings_daily(meeting_chat_id)
+            meetings_weekly = m_meeting_weekly.select_meetings_weekly(meeting_chat_id)
+            meetings_weekly_double = m_meeting_weekly_double.select_meetings_weekly_double(meeting_chat_id)
 
         if len(future_meetings) + len(meetings_daily) + len(meetings_weekly) + len(meetings_weekly_double) == 0:
             self.bot.send_message(call.message.chat.id, 'Нет встреч для этого чата 💅')
@@ -126,18 +130,21 @@ class MeetingFunctions:
             reply_by_common_chats_markup(self.bot, call, 'delete_meeting_group_id')
 
     def delete_(self, message, meeting_chat_id, username):
-        meetings = model.select_meetings_by_username(meeting_chat_id, username)
+        meetings = m_meeting.select_meetings_by_username(meeting_chat_id, username)
         future_meetings = list(filter(lambda m_: utils.is_in_future(m_.date_time), meetings))
-        meetings_daily = model.select_meetings_daily_by_username(meeting_chat_id, username)
-        meetings_weekly = model.select_meetings_weekly_by_username(meeting_chat_id, username)
-        meetings_weekly_double = model.select_meetings_weekly_double_by_username(meeting_chat_id, username)
+        meetings_daily = m_meeting_daily.select_meetings_daily_by_username(meeting_chat_id, username)
+        meetings_weekly = m_meeting_weekly.select_meetings_weekly_by_username(meeting_chat_id, username)
+        meetings_weekly_double = m_meeting_weekly_double.select_meetings_weekly_double_by_username(meeting_chat_id,
+                                                                                                   username)
         if len(future_meetings) + len(meetings_daily) + len(meetings_weekly) + len(meetings_weekly_double) == 0:
             self.bot.send_message(message.chat.id, 'Нет доступных к удалению встреч 💅')
             return
         markup = InlineKeyboardMarkup()
         markup.row_width = 6
+
         def build_inline_button(meeting, prefix):
             return InlineKeyboardButton(text=meeting.get_view_short(), callback_data=f'{prefix}{meeting.id_}')
+
         for md in meetings_daily:
             markup.add(build_inline_button(md, 'delete_meeting_id_daily'))
         for mw in meetings_weekly:
@@ -151,13 +158,13 @@ class MeetingFunctions:
 
     def delete__(self, message, meeting_id):
         if '_daily' in meeting_id:
-            model.delete_meeting_daily(meeting_id.replace('_daily', ''))
+            m_meeting_daily.delete_meeting_daily(meeting_id.replace('_daily', ''))
         elif '_weekly' in meeting_id:
-            model.delete_meeting_weekly(meeting_id.replace('_weekly', ''))
+            m_meeting_weekly.delete_meeting_weekly(meeting_id.replace('_weekly', ''))
         elif '_doubleweekly' in meeting_id:
-            model.delete_meeting_weekly_double(meeting_id.replace('_doubleweekly', ''))
+            m_meeting_weekly_double.delete_meeting_weekly_double(meeting_id.replace('_doubleweekly', ''))
         else:
-            model.delete_meeting(meeting_id)
+            m_meeting.delete_meeting(meeting_id)
         self.bot.send_message(message.chat.id, 'Удалил встречу ✅')
 
     def add(self, call):
@@ -264,17 +271,19 @@ class MeetingFunctions:
         else:
             chat_title = meeting_chat.title
         if 'schedule' not in kwargs:
-            model.insert_meeting(kwargs['meeting_chat_id'], chat_title, kwargs['username'], kwargs['place'],
-                                 kwargs['description'], kwargs['notify_lag_min'],
-                                 f'{kwargs["date"]} {kwargs["time"]}')
+            m_meeting.insert_meeting(kwargs['meeting_chat_id'], chat_title, kwargs['username'], kwargs['place'],
+                                     kwargs['description'], kwargs['notify_lag_min'],
+                                     f'{kwargs["date"]} {kwargs["time"]}')
             self.bot.send_message(kwargs['meeting_chat_id'], Meeting.get_added_text(kwargs))
         elif kwargs['schedule'] == 'daily':
-            model.insert_meeting_daily(kwargs['meeting_chat_id'], chat_title, kwargs['username'], kwargs['place'],
-                                       kwargs['description'], kwargs['notify_lag_min'], kwargs['time'])
+            m_meeting_daily.insert_meeting_daily(kwargs['meeting_chat_id'], chat_title, kwargs['username'],
+                                                 kwargs['place'], kwargs['description'], kwargs['notify_lag_min'],
+                                                 kwargs['time'])
             self.bot.send_message(kwargs['meeting_chat_id'], MeetingDaily.get_added_text(kwargs))
         elif kwargs['schedule'] == 'weekly':
-            model.insert_meeting_weekly(kwargs['meeting_chat_id'], chat_title, kwargs['username'], kwargs['place'],
-                                        kwargs['description'], kwargs['notify_lag_min'], kwargs['day'], kwargs['time'])
+            m_meeting_weekly.insert_meeting_weekly(kwargs['meeting_chat_id'], chat_title, kwargs['username'],
+                                                   kwargs['place'], kwargs['description'],
+                                                   kwargs['notify_lag_min'], kwargs['day'], kwargs['time'])
             self.bot.send_message(kwargs['meeting_chat_id'], MeetingWeekly.get_added_text(kwargs))
         elif kwargs['schedule'] == 'doubleweekly':
             if utils.is_current_week_even():
@@ -287,9 +296,10 @@ class MeetingFunctions:
                     is_even = 0
                 else:
                     is_even = 1
-            model.insert_meeting_weekly_double(kwargs['meeting_chat_id'], chat_title, kwargs['username'],
-                                               kwargs['place'], kwargs['description'], kwargs['notify_lag_min'],
-                                               is_even, kwargs['day'], kwargs['time'])
+            m_meeting_weekly_double.insert_meeting_weekly_double(kwargs['meeting_chat_id'], chat_title,
+                                                                 kwargs['username'], kwargs['place'],
+                                                                 kwargs['description'], kwargs['notify_lag_min'],
+                                                                 is_even, kwargs['day'], kwargs['time'])
             self.bot.send_message(kwargs['meeting_chat_id'], MeetingWeeklyDouble.get_added_text(is_even, kwargs))
         if message.chat.type == 'private':
             self.bot.send_message(message.chat.id, text=f'Запланировал ✅')
