@@ -1,0 +1,1 @@
+nohup python calendar-bot.py &
