@@ -47,11 +47,11 @@ def fetchone(query, parameters=None):
             curr.execute(query, parameters)
         else:
             curr.execute(query)
-        return curr.fetchone()
+        return curr.fetchone()[0]
 
 
 def is_super_user(username):
-    return fetchone(__IS_SUPER_USER, (username,))[0] > 0
+    return fetchone(__IS_SUPER_USER, (username,)) > 0
 
 
 def select_token():
