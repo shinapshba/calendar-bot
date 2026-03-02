@@ -2,7 +2,7 @@ import sqlite3
 
 from dto import Chat
 
-DATABASE_FILE = '../database.db'
+DATABASE_FILE = './database.db'
 MEETING_BASE_COLS = 'chat_id, chat_title, username, place, description, notify_lag_min'
 
 __SELECT_TOKEN = 'SELECT data FROM token'
