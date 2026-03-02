@@ -83,7 +83,7 @@ def admin(message):
         functions.add_cancel_button(markup)
         bot.send_message(message.chat.id, 'Выберите действие', reply_markup=markup)
     else:
-        bot.send_message(message.chat.id, 'Управление доступно только администраторам бота 🔒')
+        bot.send_message(message.chat.id, 'Отказано 🔒')
 
 
 # endregion
