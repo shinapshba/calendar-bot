@@ -64,10 +64,10 @@ class AdminFunctions:
         self.bot.send_message(call.message.chat.id, text)
 
     def get_logs(self, call):
-        if not os.path.exists('../nohup.out'):
+        if not os.path.exists('./nohup.out'):
             self.bot.send_message(call.message.chat.id, 'Файл логов не найден')
             return
-        with open('../nohup.out', 'rb') as log_file:
+        with open('./nohup.out', 'rb') as log_file:
             self.bot.send_document(call.message.chat.id, log_file)
 
 
