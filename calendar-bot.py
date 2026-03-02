@@ -52,6 +52,10 @@ COMMANDS_ADMIN = {
     4: {
         'name': 'Показать пользователей',
         'function': functions_admin.show_users
+    },
+    5: {
+        'name': 'Получить файл логов',
+        'function': functions_admin.get_logs
     }
 }
 
