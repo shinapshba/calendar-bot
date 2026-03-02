@@ -16,11 +16,11 @@ def insert_meeting(chat_id, chat_title, username, place, description, notify_lag
 
 
 def select_meetings(chat_id):
-    fetchall(__SELECT_MEETING, Meeting.row_factory(), (chat_id,))
+    return fetchall(__SELECT_MEETING, Meeting.row_factory(), (chat_id,))
 
 
 def select_meetings_by_username(chat_id, username):
-    fetchall(__SELECT_MEETING, Meeting.row_factory(), (chat_id, username,))
+    return fetchall(__SELECT_MEETING, Meeting.row_factory(), (chat_id, username,))
 
 
 def delete_meeting(id_):
@@ -28,11 +28,11 @@ def delete_meeting(id_):
 
 
 def select_meetings_for_notify_by_day():
-    fetchall(__SELECT_MEETING_FOR_NOTIFY_DAY, Meeting.row_factory())
+    return fetchall(__SELECT_MEETING_FOR_NOTIFY_DAY, Meeting.row_factory())
 
 
 def select_meetings_for_notify_by_min():
-    fetchall(__SELECT_MEETING_FOR_NOTIFY_MIN, Meeting.row_factory())
+    return fetchall(__SELECT_MEETING_FOR_NOTIFY_MIN, Meeting.row_factory())
 
 
 def update_meeting_notify_flag_day(id_):
@@ -46,4 +46,4 @@ def update_meeting_notify_flag_min(id_):
 def select_meetings_for_chats(chat_ides):
     placeholders, chat_ides = build_placeholders_with_params(chat_ides)
     query = f'SELECT * FROM meeting WHERE chat_id IN ({placeholders})'
-    fetchall(query, Meeting.row_factory(), chat_ides)
+    return fetchall(query, Meeting.row_factory(), chat_ides)

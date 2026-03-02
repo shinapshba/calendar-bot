@@ -17,11 +17,11 @@ def insert_meeting_weekly_double(chat_id, chat_title, username, place, descripti
 
 
 def select_meetings_weekly_double(chat_id):
-    fetchall(__SELECT_MEETING_WEEKLY_DOUBLE, MeetingWeeklyDouble.row_factory(), (chat_id,))
+    return fetchall(__SELECT_MEETING_WEEKLY_DOUBLE, MeetingWeeklyDouble.row_factory(), (chat_id,))
 
 
 def select_meetings_weekly_double_by_username(chat_id, username):
-    fetchall(__SELECT_MEETING_WEEKLY_DOUBLE_BY_USERNAME, MeetingWeeklyDouble.row_factory(),
+    return fetchall(__SELECT_MEETING_WEEKLY_DOUBLE_BY_USERNAME, MeetingWeeklyDouble.row_factory(),
              (chat_id, username,))
 
 
@@ -30,7 +30,7 @@ def delete_meeting_weekly_double(id_):
 
 
 def select_meetings_weekly_double_not_notified():
-    fetchall(__SELECT_MEETING_WEEKLY_DOUBLE_NOT_NOTIFIED, MeetingWeeklyDouble.row_factory())
+    return fetchall(__SELECT_MEETING_WEEKLY_DOUBLE_NOT_NOTIFIED, MeetingWeeklyDouble.row_factory())
 
 
 def update_meetings_weekly_double(id_):
@@ -44,4 +44,4 @@ def backup_meetings_weekly_double():
 def select_meetings_weekly_double_for_chats(chat_ides):
     placeholders, chat_ides = build_placeholders_with_params(chat_ides)
     query = f'SELECT * FROM meeting_weekly_double WHERE chat_id IN ({placeholders})'
-    fetchall(query, MeetingWeeklyDouble.row_factory(), chat_ides)
+    return fetchall(query, MeetingWeeklyDouble.row_factory(), chat_ides)

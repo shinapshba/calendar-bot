@@ -11,11 +11,11 @@ __BACKUP_MEETING_DAILY = 'UPDATE meeting_daily SET is_notified = 0'
 
 
 def select_meetings_daily(chat_id):
-    fetchall(__SELECT_MEETING_DAILY, MeetingDaily.row_factory(), (chat_id,))
+    return fetchall(__SELECT_MEETING_DAILY, MeetingDaily.row_factory(), (chat_id,))
 
 
 def select_meetings_daily_by_username(chat_id, username):
-    fetchall(__SELECT_MEETING_DAILY_BY_USERNAME, MeetingDaily.row_factory(), (chat_id, username,))
+    return fetchall(__SELECT_MEETING_DAILY_BY_USERNAME, MeetingDaily.row_factory(), (chat_id, username,))
 
 
 def delete_meeting_daily(id_):
@@ -28,7 +28,7 @@ def insert_meeting_daily(chat_id, chat_title, username, place, description, noti
 
 
 def select_meetings_daily_not_notified():
-    fetchall(__SELECT_MEETING_DAILY_NOT_NOTIFIED, MeetingDaily.row_factory())
+    return fetchall(__SELECT_MEETING_DAILY_NOT_NOTIFIED, MeetingDaily.row_factory())
 
 
 def update_meetings_daily(id_):
@@ -42,4 +42,4 @@ def backup_meetings_daily():
 def select_meetings_daily_for_chats(chat_ides):
     placeholders, chat_ides = build_placeholders_with_params(chat_ides)
     query = f'SELECT * FROM meeting_daily WHERE chat_id IN ({placeholders})'
-    fetchall(query, MeetingDaily.row_factory(), chat_ides)
+    return fetchall(query, MeetingDaily.row_factory(), chat_ides)

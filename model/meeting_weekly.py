@@ -17,11 +17,11 @@ def insert_meeting_weekly(chat_id, chat_title, username, place, description, not
 
 
 def select_meetings_weekly(chat_id):
-    fetchall(__SELECT_MEETING_WEEKLY, MeetingWeekly.row_factory(), (chat_id,))
+    return fetchall(__SELECT_MEETING_WEEKLY, MeetingWeekly.row_factory(), (chat_id,))
 
 
 def select_meetings_weekly_by_username(chat_id, username):
-    fetchall(__SELECT_MEETING_WEEKLY_BY_USERNAME, MeetingWeekly.row_factory(), (chat_id, username,))
+    return fetchall(__SELECT_MEETING_WEEKLY_BY_USERNAME, MeetingWeekly.row_factory(), (chat_id, username,))
 
 
 def delete_meeting_weekly(id_):
@@ -29,7 +29,7 @@ def delete_meeting_weekly(id_):
 
 
 def select_meetings_weekly_not_notified():
-    fetchall(__SELECT_MEETING_WEEKLY_NOT_NOTIFIED, MeetingWeekly.row_factory())
+    return fetchall(__SELECT_MEETING_WEEKLY_NOT_NOTIFIED, MeetingWeekly.row_factory())
 
 
 def update_meetings_weekly(id_):
@@ -43,4 +43,4 @@ def backup_meetings_weekly():
 def select_meetings_weekly_for_chats(chat_ides):
     placeholders, chat_ides = build_placeholders_with_params(chat_ides)
     query = f'SELECT * FROM meeting_weekly WHERE chat_id IN ({placeholders})'
-    fetchall(query, MeetingWeekly.row_factory(), chat_ides)
+    return fetchall(query, MeetingWeekly.row_factory(), chat_ides)
