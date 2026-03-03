@@ -26,12 +26,14 @@ class BotExceptionHandler(telebot.ExceptionHandler):
 
 
 bot = telebot.TeleBot(model_root.select_token(), exception_handler=BotExceptionHandler())
+print('Bot creating complete')
 
 bot.set_my_commands([
     telebot.types.BotCommand('/start', 'Начало работы'),
     telebot.types.BotCommand('/meeting', 'Работа со встречами'),
     telebot.types.BotCommand('/admin', 'Управление')
 ])
+print('Bot commands setting complete')
 
 functions_admin = functions.AdminFunctions(bot)
 functions_meeting = functions.MeetingFunctions(bot)
