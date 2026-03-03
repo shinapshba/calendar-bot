@@ -1,5 +1,5 @@
 #!/bin/bash
-pids=$(pgrep -f "python calendar-bot.py")
+pids=$(pgrep -f "python -u calendar-bot.py")
 if [ -z "$pids" ]; then
     echo "Нет запущенных calendar-bot"
 else

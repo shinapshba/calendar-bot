@@ -1,12 +1,60 @@
 import datetime
 import re
+import os
+import threading
 
-from wrapper.functions import MeetingFunctions
+from wrapper.functions import MeetingFunctions, AdminFunctions
 
 from telebot_calendar import Calendar, CallbackData, RUSSIAN_LANGUAGE
 
 calendar = Calendar(language=RUSSIAN_LANGUAGE)
 callback_add = CallbackData('date_meeting', 'action', 'year', 'month', 'day')
+
+
+class AdminCallbackHandlers:
+
+    LOG_FILE = './nohup.out'
+
+    def __init__(self, admin_functions: AdminFunctions):
+        self.admin_functions = admin_functions
+        self.bot = admin_functions.bot
+
+    @staticmethod
+    def __send_logs_file_async(bot, chat_id):
+        if not os.path.exists(AdminCallbackHandlers.LOG_FILE):
+            bot.send_message(chat_id, 'Файл логов не найден')
+            return
+        if os.path.getsize(AdminCallbackHandlers.LOG_FILE) == 0:
+            bot.send_message(chat_id, 'Файл логов пуст')
+            return
+        with open(AdminCallbackHandlers.LOG_FILE, 'rb') as log_file:
+            bot.send_document(chat_id, log_file)
+
+    @staticmethod
+    def __send_logs_text_async(bot, chat_id):
+        if not os.path.exists(AdminCallbackHandlers.LOG_FILE):
+            bot.send_message(chat_id, 'Файл логов не найден')
+            return
+        if os.path.getsize(AdminCallbackHandlers.LOG_FILE) == 0:
+            bot.send_message(chat_id, 'Файл логов пуст')
+            return
+        with open(AdminCallbackHandlers.LOG_FILE, 'r', encoding='utf-8') as log_file:
+            logs = log_file.read()
+        bot.send_message(chat_id, logs)
+
+    def get_logs_file(self, call):
+        thread = threading.Thread(target=AdminCallbackHandlers.__send_logs_file_async,
+                                  args=(self.bot, call.message.chat.id))
+        thread.daemon = True
+        thread.start()
+        self.bot.delete_message(call.message.chat.id, call.message.message_id)
+
+    def get_logs_text(self, call):
+        thread = threading.Thread(target=AdminCallbackHandlers.__send_logs_text_async,
+                                  args=(self.bot, call.message.chat.id))
+        thread.daemon = True
+        thread.start()
+        self.bot.delete_message(call.message.chat.id, call.message.message_id)
 
 
 class MeetingCallbackHandlers:

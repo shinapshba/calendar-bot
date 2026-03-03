@@ -1,7 +1,5 @@
 import datetime
 import re
-import threading
-import os
 import utils
 
 from model import root as m_root
@@ -64,21 +62,15 @@ class AdminFunctions:
             return
         self.bot.send_message(call.message.chat.id, text)
 
-    @staticmethod
-    def __send_logs_async(bot, chat_id):
-        if not os.path.exists('./nohup.out'):
-            bot.send_message(chat_id, 'Файл логов не найден')
-            return
-        if os.path.getsize('./nohup.out') == 0:
-            bot.send_message(chat_id, 'Файл логов пуст')
-            return
-        with open('./nohup.out', 'rb') as log_file:
-            bot.send_document(chat_id, log_file)
-
-    def get_logs(self, call):
-        thread = threading.Thread(target=AdminFunctions.__send_logs_async, args=(self.bot, call.message.chat.id))
-        thread.daemon = True
-        thread.start()
+    def logs(self, call):
+        markup = InlineKeyboardMarkup()
+        markup.row_width = 6
+        markup.row(
+            InlineKeyboardButton(text='Файл', callback_data='get_log_file'),
+            InlineKeyboardButton(text='Текст', callback_data='get_log_text')
+        )
+        add_cancel_button(markup)
+        self.bot.send_message(call.message.chat.id, 'Выберите опцию', reply_markup=markup)
 
 
 class MeetingFunctions:
