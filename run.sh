@@ -1,1 +1,1 @@
-nohup python calendar-bot.py &
+nohup python -u calendar-bot.py &
