@@ -1,6 +1,7 @@
 import datetime
 import re
 import utils
+import html
 
 from model import root as m_root
 from model import meeting as m_meeting
@@ -16,6 +17,7 @@ calendar = Calendar(language=RUSSIAN_LANGUAGE)
 callback_add = CallbackData('date_meeting', 'action', 'year', 'month', 'day')
 
 
+# region utils
 def raise_error(bot, chat_id, text):
     bot.send_message(chat_id, text)
     raise Exception(text)
@@ -23,6 +25,80 @@ def raise_error(bot, chat_id, text):
 
 def add_cancel_button(markup):
     markup.row(InlineKeyboardButton(text='Отмена', callback_data='cancel'))
+
+
+def convert_message_to_html(message):
+    text = message.text
+    entities = message.entities
+    if not text:
+        return ""
+    if not entities:
+        return html.escape(text, quote=False)
+    text = html.escape(text, quote=False)
+    sorted_entities = sorted(entities, key=lambda e_: e_.offset, reverse=True)
+    result = text
+    for entity in sorted_entities:
+        if entity.offset < 0 or entity.length <= 0:
+            continue
+        start = entity.offset
+        end = entity.offset + entity.length
+        if start >= len(result) or end > len(result):
+            continue
+        entity_text = result[start:end]
+        if not entity_text:
+            continue
+        try:
+            if entity.type == "bold":
+                result = result[:start] + f"<b>{entity_text}</b>" + result[end:]
+            elif entity.type == "italic":
+                result = result[:start] + f"<i>{entity_text}</i>" + result[end:]
+            elif entity.type == "underline":
+                result = result[:start] + f"<u>{entity_text}</u>" + result[end:]
+            elif entity.type == "strikethrough":
+                result = result[:start] + f"<s>{entity_text}</s>" + result[end:]
+            elif entity.type == "code":
+                result = result[:start] + f"<code>{entity_text}</code>" + result[end:]
+            elif entity.type == "pre":
+                language = getattr(entity, 'language', '')
+                if language:
+                    safe_language = html.escape(language)
+                    result = (result[:start] +
+                              f"<pre><code class='language-{safe_language}'>{entity_text}</code></pre>" + result[end:])
+                else:
+                    result = result[:start] + f"<pre>{entity_text}</pre>" + result[end:]
+            elif entity.type == "text_link":
+                url = getattr(entity, 'url', '')
+                if url:
+                    safe_url = html.escape(url)
+                    if safe_url.lower().startswith('javascript:'):
+                        safe_url = '#'
+                    result = result[:start] + f"<a href='{safe_url}'>{entity_text}</a>" + result[end:]
+                else:
+                    result = result[:start] + entity_text + result[end:]
+            elif entity.type == "url":
+                safe_url = html.escape(entity_text)
+                if safe_url.lower().startswith('javascript:'):
+                    safe_url = '#'
+                result = result[:start] + f"<a href='{safe_url}'>{entity_text}</a>" + result[end:]
+            elif entity.type == "mention":
+                username = entity_text[1:]  # убираем @
+                safe_username = html.escape(username)
+                result = result[:start] + f"<a href='https://t.me/{safe_username}'>{entity_text}</a>" + result[end:]
+            elif entity.type == "hashtag":
+                result = result[:start] + f"<b>{entity_text}</b>" + result[end:]
+            elif entity.type == "email":
+                safe_email = html.escape(entity_text)
+                result = result[:start] + f"<a href='mailto:{safe_email}'>{entity_text}</a>" + result[end:]
+            elif entity.type == "phone_number":
+                safe_phone = html.escape(entity_text)
+                result = result[:start] + f"<a href='tel:{safe_phone}'>{entity_text}</a>" + result[end:]
+            elif entity.type == "spoiler":
+                result = result[:start] + f"<span class='tg-spoiler'>{entity_text}</span>" + result[end:]
+            else:
+                result = result[:start] + entity_text + result[end:]
+        except Exception:  # noqa
+            continue
+    return result
 
 
 def get_common_chats(bot, call):
@@ -48,6 +124,9 @@ def reply_by_common_chats_markup(bot, call, markup_prefix):
         markup.add(InlineKeyboardButton(text='ЛС', callback_data=f'{markup_prefix}{call.message.chat.id}'))
     add_cancel_button(markup)
     bot.send_message(call.message.chat.id, 'Выберите чат', reply_markup=markup)
+
+
+# endregion
 
 
 class AdminFunctions:
@@ -252,12 +331,12 @@ class MeetingFunctions:
 
     def __request_url_handler(self, message, **kwargs):
         self.bot.send_message(chat_id=message.chat.id, text='Описание?')
-        kwargs['place'] = message.text.strip()
+        kwargs['place'] = convert_message_to_html(message)
         self.bot.register_next_step_handler_by_chat_id(message.chat.id, self.__request_description_handler, **kwargs)
 
     def __request_description_handler(self, message, **kwargs):
         self.bot.send_message(chat_id=message.chat.id, text='За сколько минут оповестить?')
-        kwargs['description'] = message.text.strip()
+        kwargs['description'] = convert_message_to_html(message)
         self.bot.register_next_step_handler_by_chat_id(message.chat.id, self.__request_min_for_notify, **kwargs)
 
     def __request_min_for_notify(self, message, **kwargs):
@@ -276,17 +355,17 @@ class MeetingFunctions:
             m_meeting.insert_meeting(kwargs['meeting_chat_id'], chat_title, kwargs['username'], kwargs['place'],
                                      kwargs['description'], kwargs['notify_lag_min'],
                                      f'{kwargs["date"]} {kwargs["time"]}')
-            self.bot.send_message(kwargs['meeting_chat_id'], Meeting.get_added_text(kwargs))
+            self.bot.send_message(kwargs['meeting_chat_id'], Meeting.get_added_text(kwargs), parse_mode='HTML')
         elif kwargs['schedule'] == 'daily':
             m_meeting_daily.insert_meeting_daily(kwargs['meeting_chat_id'], chat_title, kwargs['username'],
                                                  kwargs['place'], kwargs['description'], kwargs['notify_lag_min'],
                                                  kwargs['time'])
-            self.bot.send_message(kwargs['meeting_chat_id'], MeetingDaily.get_added_text(kwargs))
+            self.bot.send_message(kwargs['meeting_chat_id'], MeetingDaily.get_added_text(kwargs), parse_mode='HTML')
         elif kwargs['schedule'] == 'weekly':
             m_meeting_weekly.insert_meeting_weekly(kwargs['meeting_chat_id'], chat_title, kwargs['username'],
                                                    kwargs['place'], kwargs['description'],
                                                    kwargs['notify_lag_min'], kwargs['day'], kwargs['time'])
-            self.bot.send_message(kwargs['meeting_chat_id'], MeetingWeekly.get_added_text(kwargs))
+            self.bot.send_message(kwargs['meeting_chat_id'], MeetingWeekly.get_added_text(kwargs), parse_mode='HTML')
         elif kwargs['schedule'] == 'doubleweekly':
             if utils.is_current_week_even():
                 if int(kwargs['period']) == 1:
@@ -302,6 +381,7 @@ class MeetingFunctions:
                                                                  kwargs['username'], kwargs['place'],
                                                                  kwargs['description'], kwargs['notify_lag_min'],
                                                                  is_even, kwargs['day'], kwargs['time'])
-            self.bot.send_message(kwargs['meeting_chat_id'], MeetingWeeklyDouble.get_added_text(is_even, kwargs))
+            self.bot.send_message(kwargs['meeting_chat_id'], MeetingWeeklyDouble.get_added_text(is_even, kwargs),
+                                  parse_mode='HTML')
         if message.chat.type == 'private':
             self.bot.send_message(message.chat.id, text=f'Запланировал ✅')

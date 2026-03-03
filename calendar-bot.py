@@ -202,7 +202,7 @@ def check_meetings_by_notification_day():
     meetings = model_meeting.select_meetings_for_notify_by_day()
     meetings_to_notify = list(filter(lambda m_: utils.is_date_tomorrow(m_.date_time), meetings))
     for m in meetings_to_notify:
-        bot.send_message(m.chat_id, m.get_notify_text())
+        bot.send_message(m.chat_id, m.get_notify_text(), parse_mode='HTML')
         model_meeting.update_meeting_notify_flag_day(m.id_)
 
 
@@ -213,7 +213,7 @@ def check_meetings_by_notification_min():
         filter(lambda m_: utils.is_datetime_delta_passed_minutes(m_.date_time, int(m_.notify_lag_min)), meetings)
     )
     for m in meetings_to_notify:
-        bot.send_message(m.chat_id, m.get_notify_text())
+        bot.send_message(m.chat_id, m.get_notify_text(), parse_mode='HTML')
         model_meeting.update_meeting_notify_flag_min(m.id_)
 
 
@@ -225,7 +225,7 @@ def check_meetings_daily():
                           utils.is_time_delta_passed_minutes(m_.time_, int(m_.notify_lag_min)), meetings)
     )
     for m in meetings_to_notify:
-        bot.send_message(m.chat_id, m.get_notify_text())
+        bot.send_message(m.chat_id, m.get_notify_text(), parse_mode='HTML')
         model_meeting_daily.update_meetings_daily(m.id_)
 
 
@@ -240,7 +240,7 @@ def check_meetings_weekly():
         )
     )
     for m in meetings_to_notify:
-        bot.send_message(m.chat_id, m.get_notify_text())
+        bot.send_message(m.chat_id, m.get_notify_text(), parse_mode='HTML')
         model_meeting_weekly.update_meetings_weekly(m.id_)
 
 
@@ -256,7 +256,7 @@ def check_meetings_weekly_double():
         )
     )
     for m in meetings_to_notify:
-        bot.send_message(m.chat_id, m.get_notify_text())
+        bot.send_message(m.chat_id, m.get_notify_text(), parse_mode='HTML')
         model_meeting_weekly_double.update_meetings_weekly_double(m.id_)
 
 
