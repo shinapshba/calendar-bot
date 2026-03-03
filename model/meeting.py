@@ -20,7 +20,7 @@ def select_meetings(chat_id):
 
 
 def select_meetings_by_username(chat_id, username):
-    return fetchall(__SELECT_MEETING, Meeting.row_factory(), (chat_id, username,))
+    return fetchall(__SELECT_MEETING_BY_USERNAME, Meeting.row_factory(), (chat_id, username,))
 
 
 def delete_meeting(id_):
