@@ -48,3 +48,6 @@ def is_current_week_even():
 
 def is_current_day_working():
     return datetime.datetime.now().isoweekday() not in [6, 7]
+
+def get_current_datetime():
+    return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')

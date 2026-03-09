@@ -18,10 +18,11 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 class BotExceptionHandler(telebot.ExceptionHandler):
     def handle(self, exception):
-        stack_trace = traceback.format_exc()
-        print('--- Error in bot trace start ---')
+        stack_trace = str(traceback.format_exc()).strip('\n')
+        print(f'\n{utils.get_current_datetime()}')
+        print('--- Stack trace start ---')
         print(stack_trace)
-        print('--- Error in bot trace end ---')
+        print('--- Stack trace end ---')
         return True
 
 
@@ -38,7 +39,6 @@ print('Bot commands setting complete')
 functions_admin = functions.AdminFunctions(bot)
 functions_meeting = functions.MeetingFunctions(bot)
 callbacks_meeting = callbacks.MeetingCallbackHandlers(functions_meeting)
-callbacks_admin = callbacks.AdminCallbackHandlers(functions_admin)
 
 COMMANDS_MEETING = {
     1: {
@@ -61,7 +61,7 @@ COMMANDS_ADMIN = {
         'function': functions_admin.show_users
     },
     5: {
-        'name': 'Просмотр логов',
+        'name': 'Файл логов',
         'function': functions_admin.logs
     }
 }
@@ -118,16 +118,6 @@ def cancel_callback_handler(call):
 # endregion
 
 # region callbacks from functions
-@bot.callback_query_handler(func=lambda call: call.data.startswith('get_log_file'))
-def get_log_file_callback_handler(call):
-    callbacks_admin.get_logs_file(call)
-
-
-@bot.callback_query_handler(func=lambda call: call.data.startswith('get_log_text'))
-def get_log_text_callback_handler(call):
-    callbacks_admin.get_logs_text(call)
-
-
 @bot.callback_query_handler(func=lambda call: call.data.startswith('show_meeting_group_id'))
 def show_meeting_group_id_callback_handler(call):
     callbacks_meeting.show_meeting_group_id_callback_handler(call, 'show_meeting_group_id')

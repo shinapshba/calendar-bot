@@ -2,6 +2,8 @@ import datetime
 import re
 import utils
 import html
+import os
+import threading
 
 from model import root as m_root
 from model import meeting as m_meeting
@@ -133,6 +135,26 @@ class AdminFunctions:
     def __init__(self, bot):
         self.bot = bot
 
+    LOG_FILE = './nohup.out'
+
+    @staticmethod
+    def __send_logs_file_async(bot, chat_id):
+        if not os.path.exists(AdminFunctions.LOG_FILE):
+            bot.send_message(chat_id, 'Файл логов не найден')
+            return
+        if os.path.getsize(AdminFunctions.LOG_FILE) == 0:
+            bot.send_message(chat_id, 'Файл логов пуст')
+            return
+        with open(AdminFunctions.LOG_FILE, 'rb') as log_file:
+            bot.send_document(chat_id, log_file)
+
+    def logs(self, call):
+        thread = threading.Thread(target=AdminFunctions.__send_logs_file_async,
+                                  args=(self.bot, call.message.chat.id))
+        thread.daemon = True
+        thread.start()
+        self.bot.delete_message(call.message.chat.id, call.message.message_id)
+
     def show_users(self, call):
         chats = m_root.select_all_chats()
         text = '\n'.join(sorted(list(map(lambda c: c.to_string(), chats))))
@@ -140,16 +162,6 @@ class AdminFunctions:
             self.bot.send_message(call.message.chat.id, 'Список пользователей пуст')
             return
         self.bot.send_message(call.message.chat.id, text)
-
-    def logs(self, call):
-        markup = InlineKeyboardMarkup()
-        markup.row_width = 6
-        markup.row(
-            InlineKeyboardButton(text='Файл', callback_data='get_log_file'),
-            InlineKeyboardButton(text='Текст', callback_data='get_log_text')
-        )
-        add_cancel_button(markup)
-        self.bot.send_message(call.message.chat.id, 'Выберите опцию', reply_markup=markup)
 
 
 class MeetingFunctions:
