@@ -153,7 +153,6 @@ class AdminFunctions:
                                   args=(self.bot, call.message.chat.id))
         thread.daemon = True
         thread.start()
-        self.bot.delete_message(call.message.chat.id, call.message.message_id)
 
     def show_users(self, call):
         chats = m_root.select_all_chats()

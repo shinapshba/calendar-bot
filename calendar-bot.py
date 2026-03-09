@@ -14,6 +14,7 @@ from model import meeting_weekly_double as model_meeting_weekly_double
 
 from threading import Thread
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+from telebot.types import BotCommand, BotCommandScopeDefault, BotCommandScopeAllPrivateChats
 
 
 class BotExceptionHandler(telebot.ExceptionHandler):
@@ -26,15 +27,18 @@ class BotExceptionHandler(telebot.ExceptionHandler):
         return True
 
 
-bot = telebot.TeleBot(model_root.select_token(), exception_handler=BotExceptionHandler())
-print('Bot creating complete')
+commands_default = [
+    BotCommand('/start', 'Начало работы'),
+    BotCommand('/meeting', 'Работа со встречами')
+]
 
-bot.set_my_commands([
-    telebot.types.BotCommand('/start', 'Начало работы'),
-    telebot.types.BotCommand('/meeting', 'Работа со встречами'),
-    telebot.types.BotCommand('/admin', 'Управление')
-])
-print('Bot commands setting complete')
+commands_admin = [
+    BotCommand('/admin', 'Управление')
+]
+
+bot = telebot.TeleBot(model_root.select_token(), exception_handler=BotExceptionHandler())
+bot.set_my_commands(commands=commands_default, scope=BotCommandScopeDefault())
+bot.set_my_commands(commands=commands_default + commands_admin, scope=BotCommandScopeAllPrivateChats())
 
 functions_admin = functions.AdminFunctions(bot)
 functions_meeting = functions.MeetingFunctions(bot)
@@ -86,15 +90,15 @@ def meeting(message):
 
 @bot.message_handler(commands=['admin'])
 def admin(message):
-    if model_root.is_super_user(message.from_user.username):
-        markup = InlineKeyboardMarkup()
-        markup.row_width = 6
-        for key, value in COMMANDS_ADMIN.items():
-            markup.add(InlineKeyboardButton(text=value['name'], callback_data=f'command_{key}'))
-        functions.add_cancel_button(markup)
-        bot.send_message(message.chat.id, 'Выберите действие', reply_markup=markup)
-    else:
+    if not model_root.is_super_user(message.from_user.username):
         bot.send_message(message.chat.id, 'Отказано 🔒')
+        return
+    markup = InlineKeyboardMarkup()
+    markup.row_width = 6
+    for key, value in COMMANDS_ADMIN.items():
+        markup.add(InlineKeyboardButton(text=value['name'], callback_data=f'command_{key}'))
+    functions.add_cancel_button(markup)
+    bot.send_message(message.chat.id, 'Выберите действие', reply_markup=markup)
 
 
 # endregion
