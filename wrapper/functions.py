@@ -8,9 +8,10 @@ import threading
 from model import root as m_root
 from model import meeting as m_meeting
 from model import meeting_daily as m_meeting_daily
+from model import meeting_monthly as m_meeting_monthly
 from model import meeting_weekly as m_meeting_weekly
 from model import meeting_weekly_double as m_meeting_weekly_double
-from dto import Meeting, MeetingDaily, MeetingWeekly, MeetingWeeklyDouble
+from dto import Meeting, MeetingDaily, MeetingWeekly, MeetingWeeklyDouble, MeetingMonthly
 
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from telebot_calendar import Calendar, CallbackData, RUSSIAN_LANGUAGE
@@ -189,16 +190,22 @@ class MeetingFunctions:
             future_meetings = list(filter(lambda m: utils.is_in_future(m.date_time), meetings))
             meetings_daily = m_meeting_daily.select_meetings_daily_for_chats(common_chat_ides)
             meetings_weekly = m_meeting_weekly.select_meetings_weekly_for_chats(common_chat_ides)
+            meetings_monthly = m_meeting_monthly.select_meetings_monthly_for_chats(common_chat_ides)
             meetings_weekly_double = m_meeting_weekly_double.select_meetings_weekly_double_for_chats(common_chat_ides)
         else:
             meetings = m_meeting.select_meetings(meeting_chat_id)
             future_meetings = list(filter(lambda m: utils.is_in_future(m.date_time), meetings))
             meetings_daily = m_meeting_daily.select_meetings_daily(meeting_chat_id)
             meetings_weekly = m_meeting_weekly.select_meetings_weekly(meeting_chat_id)
+            meetings_monthly = m_meeting_monthly.select_meetings_monthly(meeting_chat_id)
             meetings_weekly_double = m_meeting_weekly_double.select_meetings_weekly_double(meeting_chat_id)
 
-        if len(future_meetings) + len(meetings_daily) + len(meetings_weekly) + len(meetings_weekly_double) == 0:
-            self.bot.send_message(call.message.chat.id, 'Нет встреч для этого чата 💅')
+        if (len(future_meetings) +
+                len(meetings_daily) +
+                len(meetings_weekly) +
+                len(meetings_weekly_double) +
+                len(meetings_monthly) == 0):
+            self.bot.send_message(call.message.chat.id, 'Нет встреч 💅')
             return
 
         meeting_views = []
@@ -206,11 +213,13 @@ class MeetingFunctions:
             meeting_views += list(map(lambda fm: f' * {fm.get_view_with_chat_title()}', future_meetings))
             meeting_views += list(map(lambda md: f' * {md.get_view_with_chat_title()}', meetings_daily))
             meeting_views += list(map(lambda mw: f' * {mw.get_view_with_chat_title()}', meetings_weekly))
+            meeting_views += list(map(lambda mm: f' * {mm.get_view_with_chat_title()}', meetings_monthly))
             meeting_views += list(map(lambda mwd: f' * {mwd.get_view_with_chat_title()}', meetings_weekly_double))
         else:
             meeting_views += list(map(lambda fm: f' * {fm.get_view_short()}', future_meetings))
             meeting_views += list(map(lambda md: f' * {md.get_view_short()}', meetings_daily))
             meeting_views += list(map(lambda mw: f' * {mw.get_view_short()}', meetings_weekly))
+            meeting_views += list(map(lambda mm: f' * {mm.get_view_short()}', meetings_monthly))
             meeting_views += list(map(lambda mwd: f' * {mwd.get_view_short()}', meetings_weekly_double))
         meeting_views.sort()
         self.bot.send_message(call.message.chat.id, 'Встречи:\n' + '\n'.join(meeting_views))
@@ -226,9 +235,14 @@ class MeetingFunctions:
         future_meetings = list(filter(lambda m_: utils.is_in_future(m_.date_time), meetings))
         meetings_daily = m_meeting_daily.select_meetings_daily_by_username(meeting_chat_id, username)
         meetings_weekly = m_meeting_weekly.select_meetings_weekly_by_username(meeting_chat_id, username)
+        meetings_monthly = m_meeting_monthly.select_meetings_monthly_by_username(meeting_chat_id, username)
         meetings_weekly_double = m_meeting_weekly_double.select_meetings_weekly_double_by_username(meeting_chat_id,
                                                                                                    username)
-        if len(future_meetings) + len(meetings_daily) + len(meetings_weekly) + len(meetings_weekly_double) == 0:
+        if (len(future_meetings) +
+                len(meetings_daily) +
+                len(meetings_weekly) +
+                len(meetings_weekly_double) +
+                len(meetings_monthly) == 0):
             self.bot.send_message(message.chat.id, 'Нет доступных к удалению встреч 💅')
             return
         markup = InlineKeyboardMarkup()
@@ -241,6 +255,8 @@ class MeetingFunctions:
             markup.add(build_inline_button(md, 'delete_meeting_id_daily'))
         for mw in meetings_weekly:
             markup.add(build_inline_button(mw, 'delete_meeting_id_weekly'))
+        for mm in meetings_monthly:
+            markup.add(build_inline_button(mm, 'delete_meeting_id_monthly'))
         for mwd in meetings_weekly_double:
             markup.add(build_inline_button(mwd, 'delete_meeting_id_doubleweekly'))
         for m in future_meetings:
@@ -253,6 +269,8 @@ class MeetingFunctions:
             m_meeting_daily.delete_meeting_daily(meeting_id.replace('_daily', ''))
         elif '_weekly' in meeting_id:
             m_meeting_weekly.delete_meeting_weekly(meeting_id.replace('_weekly', ''))
+        elif '_monthly' in meeting_id:
+            m_meeting_monthly.delete_meeting_monthly(meeting_id.replace('_monthly', ''))
         elif '_doubleweekly' in meeting_id:
             m_meeting_weekly_double.delete_meeting_weekly_double(meeting_id.replace('_doubleweekly', ''))
         else:
@@ -280,6 +298,7 @@ class MeetingFunctions:
         markup.row_width = 1
         markup.add(InlineKeyboardButton(text='Ежедневно', callback_data=f'meeting_schedule_daily_{meeting_chat_id}'))
         markup.add(InlineKeyboardButton(text='Еженедельно', callback_data=f'meeting_schedule_weekly_{meeting_chat_id}'))
+        markup.add(InlineKeyboardButton(text='Ежемесячно', callback_data=f'meeting_schedule_monthly_{meeting_chat_id}'))
         markup.add(InlineKeyboardButton(text='Каждые две недели',
                                         callback_data=f'meeting_schedule_doubleweekly_{meeting_chat_id}'))
         add_cancel_button(markup)
@@ -318,6 +337,14 @@ class MeetingFunctions:
                                         callback_data=f'week_period_meeting_group_id_2_{meeting_chat_id}'))
         add_cancel_button(markup)
         self.bot.send_message(message.chat.id, 'начиная с какой недели?', reply_markup=markup)
+
+    def request_day_of_month(self, message, **kwargs):
+        text = message.text.strip()
+        if re.fullmatch('\b([1-9]|[12][0-9]|3[01])\b', text) is None:
+            raise_error(self.bot, message.chat.id, 'Нужно было ввести число от 1 до 31 😐')
+        kwargs['day_of_month'] = text
+        self.bot.send_message(message.chat.id, 'Время? (HH:mm)')
+        self.bot.register_next_step_handler_by_chat_id(message.chat.id, self.request_time_handler, **kwargs)
 
     def request_time_handler(self, message, **kwargs):
         text = message.text.strip()
@@ -377,6 +404,11 @@ class MeetingFunctions:
                                                    kwargs['place'], kwargs['description'],
                                                    kwargs['notify_lag_min'], kwargs['day'], kwargs['time'])
             self.bot.send_message(kwargs['meeting_chat_id'], MeetingWeekly.get_added_text(kwargs), parse_mode='HTML')
+        elif kwargs['schedule'] == 'monthly':
+            m_meeting_monthly.insert_meeting_monthly(kwargs['meeting_chat_id'], chat_title, kwargs['username'],
+                                                     kwargs['place'], kwargs['description'],
+                                                     kwargs['notify_lag_min'], kwargs['day_of_month'], kwargs['time'])
+            self.bot.send_message(kwargs['meeting_chat_id'], MeetingMonthly.get_added_text(kwargs), parse_mode='HTML')
         elif kwargs['schedule'] == 'doubleweekly':
             if utils.is_current_week_even():
                 if int(kwargs['period']) == 1:

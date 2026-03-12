@@ -205,3 +205,40 @@ class MeetingWeeklyDouble(MeetingBase):
 
     def get_view_short(self):
         return f'{self.get_day_string()}, в {self.time_}'
+
+
+class MeetingMonthly(MeetingBase):
+    def __init__(self, id_, chat_id, chat_title, username, place, description, notify_lag_min,
+                 day_of_month, time_, is_notified):
+        super().__init__(id_, chat_id, chat_title, username, place, description, notify_lag_min)
+        self.day_of_month = int(day_of_month)
+        self.time_ = time_
+        self.is_notified = bool(int(is_notified))
+
+    @staticmethod
+    def row_factory():
+        return lambda cursor, row: MeetingMonthly(
+            row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[9]
+        )
+
+    def get_notify_text(self):
+        return (f'Напоминание о встрече 👀\n'
+                f'Время: {self.time_}\n'
+                f'Место: {self.place}\n'
+                f'Описание: {self.description}\n\n'
+                f'Directed by @{self.username}')
+
+    @staticmethod
+    def get_added_text(kwargs):
+        return (f'Добавлена встреча 🐝\n'
+                f'Каждое {kwargs["day_of_month"]}ое число\n'
+                f'Место: {kwargs["place"]}\n'
+                f'Описание: {kwargs["description"]}\n'
+                f'Лаг оповещения в минутах: {kwargs["notify_lag_min"]}\n\n'
+                f'Directed by @{kwargs["username"]}')
+
+    def get_view_with_chat_title(self):
+        return f'{self.chat_title}. Каждое {self.day_of_month}ое число'
+
+    def get_view_short(self):
+        return f'Каждое {self.day_of_month}ое число'

@@ -1,6 +1,10 @@
 import datetime
 
 
+def is_today_is_day_of_month(day_of_month: int):
+    return datetime.datetime.now().day == day_of_month
+
+
 def is_date_tomorrow(date_time_string: str):
     date = datetime.datetime.strptime(date_time_string, '%Y-%m-%d %H:%M').date()
     tomorrow_date = date.today() + datetime.timedelta(days=1)
@@ -48,6 +52,7 @@ def is_current_week_even():
 
 def is_current_day_working():
     return datetime.datetime.now().isoweekday() not in [6, 7]
+
 
 def get_current_datetime():
     return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')

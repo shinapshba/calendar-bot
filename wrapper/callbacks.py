@@ -65,14 +65,20 @@ class MeetingCallbackHandlers:
     def meeting_schedule_callback_handler(self, call):
         schedule = call.data.replace('meeting_schedule_', '').split('_')[0]
         meeting_chat_id = call.data.split('_')[3]
+        kwargs = {'schedule': schedule, 'meeting_chat_id': meeting_chat_id, 'username': call.from_user.username}
         if schedule == 'daily':
-            kwargs = {'schedule': schedule, 'meeting_chat_id': meeting_chat_id, 'username': call.from_user.username}
             self.bot.send_message(call.message.chat.id, 'Время? (HH:mm)')
             self.bot.register_next_step_handler_by_chat_id(
                 call.message.chat.id, self.meeting_functions.request_time_handler, **kwargs
             )
         elif schedule == 'weekly':
             self.meeting_functions.request_week_day(call.message, meeting_chat_id)
+        elif schedule == 'monthly':
+            kwargs = {'schedule': schedule, 'meeting_chat_id': meeting_chat_id, 'username': call.from_user.username}
+            self.bot.send_message(call.message.chat.id, 'Число?')
+            self.bot.register_next_step_handler_by_chat_id(
+                call.message.chat.id, self.meeting_functions.request_day_of_month, **kwargs
+            )
         elif schedule == 'doubleweekly':
             self.meeting_functions.request_week_period(call.message, meeting_chat_id)
         self.bot.delete_message(call.message.chat.id, call.message.message_id)

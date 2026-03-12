@@ -10,6 +10,7 @@ from model import root as model_root
 from model import meeting as model_meeting
 from model import meeting_daily as model_meeting_daily
 from model import meeting_weekly as model_meeting_weekly
+from model import meeting_monthly as model_meeting_monthly
 from model import meeting_weekly_double as model_meeting_weekly_double
 
 from threading import Thread
@@ -239,6 +240,21 @@ def check_meetings_weekly():
 
 
 @handle_exceptions
+def check_meetings_monthly():
+    meetings = model_meeting_monthly.select_meetings_monthly_not_notified()
+    meetings_to_notify = list(
+        filter(
+            lambda m_: utils.is_time_delta_passed_minutes(m_.time_, int(m_.notify_lag_min)) and
+                       utils.is_today_is_day_of_month(m_.day_of_month),
+            meetings
+        )
+    )
+    for m in meetings_to_notify:
+        bot.send_message(m.chat_id, m.get_notify_text(), parse_mode='HTML')
+        model_meeting_monthly.update_meetings_monthly(m.id_)
+
+
+@handle_exceptions
 def check_meetings_weekly_double():
     meetings = model_meeting_weekly_double.select_meetings_weekly_double_not_notified()
     meetings_to_notify = list(
@@ -258,6 +274,7 @@ def check_meetings_weekly_double():
 def backup_meetings_daily():
     model_meeting_daily.backup_meetings_daily()
     model_meeting_weekly.backup_meetings_weekly()
+    model_meeting_monthly.backup_meetings_monthly()
     model_meeting_weekly_double.backup_meetings_weekly_double()
 
 
@@ -272,6 +289,7 @@ schedule.every().day.at('00:00').do(backup_meetings_daily)
 schedule.every(1).minute.do(check_meetings_by_notification_min)
 schedule.every(1).minute.do(check_meetings_daily)
 schedule.every(1).minute.do(check_meetings_weekly)
+schedule.every(1).minute.do(check_meetings_monthly)
 schedule.every(1).minute.do(check_meetings_weekly_double)
 Thread(target=run_schedule).start()
 

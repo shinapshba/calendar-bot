@@ -1,25 +1,21 @@
 PRAGMA foreign_keys = off;
 BEGIN TRANSACTION;
 
-DROP TABLE IF EXISTS super_user;
-CREATE TABLE super_user (
+CREATE TABLE IF NOT EXISTS super_user (
     username    TEXT NOT NULL
 );
 
-DROP TABLE IF EXISTS token;
-CREATE TABLE token (
+CREATE TABLE IF NOT EXISTS token (
     data TEXT NOT NULL
 );
 
-DROP TABLE IF EXISTS chat;
-CREATE TABLE chat (
+CREATE TABLE IF NOT EXISTS chat (
     chat_id     TEXT NOT NULL UNIQUE,
     username    TEXT,
     title       TEXT
 );
 
-DROP TABLE IF EXISTS meeting;
-CREATE TABLE meeting (
+CREATE TABLE IF NOT EXISTS meeting (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     chat_id         TEXT    NOT NULL,
     chat_title      TEXT    NOT NULL,
@@ -32,8 +28,7 @@ CREATE TABLE meeting (
     is_notified_min INTEGER NOT NULL DEFAULT (0)
 );
 
-DROP TABLE IF EXISTS meeting_daily;
-CREATE TABLE meeting_daily (
+CREATE TABLE IF NOT EXISTS meeting_daily (
     id             INTEGER PRIMARY KEY AUTOINCREMENT,
     chat_id        TEXT    NOT NULL,
     chat_title      TEXT    NOT NULL,
@@ -45,8 +40,7 @@ CREATE TABLE meeting_daily (
     is_notified    INTEGER DEFAULT (0)
 );
 
-DROP TABLE IF EXISTS meeting_weekly;
-CREATE TABLE meeting_weekly (
+CREATE TABLE IF NOT EXISTS meeting_weekly (
     id             INTEGER PRIMARY KEY AUTOINCREMENT,
     chat_id        TEXT    NOT NULL,
     chat_title     TEXT    NOT NULL,
@@ -59,8 +53,7 @@ CREATE TABLE meeting_weekly (
     is_notified    INTEGER DEFAULT (0)
 );
 
-DROP TABLE IF EXISTS meeting_weekly_double;
-CREATE TABLE meeting_weekly_double (
+CREATE TABLE IF NOT EXISTS meeting_weekly_double (
     id             INTEGER PRIMARY KEY AUTOINCREMENT,
     chat_id        TEXT    NOT NULL,
     chat_title     TEXT    NOT NULL,
@@ -70,6 +63,19 @@ CREATE TABLE meeting_weekly_double (
     notify_lag_min INTEGER NOT NULL,
     period         INTEGER NOT NULL,
     day            INTEGER NOT NULL,
+    time           TEXT    NOT NULL,
+    is_notified    INTEGER DEFAULT (0)
+);
+
+CREATE TABLE IF NOT EXISTS meeting_monthly (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    chat_id        TEXT    NOT NULL,
+    chat_title     TEXT    NOT NULL,
+    username       TEXT    NOT NULL,
+    place          TEXT,
+    description    TEXT,
+    notify_lag_min INTEGER NOT NULL,
+    day_of_month   INTEGER NOT NULL,
     time           TEXT    NOT NULL,
     is_notified    INTEGER DEFAULT (0)
 );
