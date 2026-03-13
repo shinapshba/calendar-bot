@@ -340,7 +340,7 @@ class MeetingFunctions:
 
     def request_day_of_month(self, message, **kwargs):
         text = message.text.strip()
-        if re.fullmatch('\b([1-9]|[12][0-9]|3[01])\b', text) is None:
+        if re.fullmatch('^([1-9]|[12][0-9]|3[01])$', text) is None:
             raise_error(self.bot, message.chat.id, 'Нужно было ввести число от 1 до 31 😐')
         kwargs['day_of_month'] = text
         self.bot.send_message(message.chat.id, 'Время? (HH:mm)')
