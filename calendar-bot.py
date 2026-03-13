@@ -301,4 +301,4 @@ if updates:
     last_update_id = updates[-1].update_id
     bot.get_updates(offset=last_update_id + 1)
 
-bot.polling(none_stop=True, interval=0, skip_pending=True)
+bot.infinity_polling(none_stop=True, interval=0, skip_pending=True, timeout=60, long_polling_timeout=60)
