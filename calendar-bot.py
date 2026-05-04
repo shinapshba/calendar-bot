@@ -75,7 +75,7 @@ COMMANDS_ADMIN = {
     },
     7: {
         'name': 'Добавить выходной',
-        'function': functions_meeting.add_day_off_
+        'function': functions_meeting.add_day_off
     },
     8: {
         'name': 'Удалить выходные',
@@ -148,6 +148,11 @@ def add_meeting_group_id_callback_handler(call):
 @bot.callback_query_handler(func=lambda call: call.data.startswith('date_meeting_group_id'))
 def meeting_calendar_callback_handler(call):
     callbacks_meeting.add_meeting_date_callback_handler(call)
+
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith('date_day_off'))
+def day_off_calendar_callback_handler(call):
+    callbacks_meeting.day_off_date_callback_handler(call)
 
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('add_meeting_regular_flg'))

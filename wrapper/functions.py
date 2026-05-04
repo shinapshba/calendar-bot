@@ -14,10 +14,10 @@ from model import meeting_weekly_double as m_meeting_weekly_double
 from dto import Meeting, MeetingDaily, MeetingWeekly, MeetingWeeklyDouble, MeetingMonthly
 
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
-from telebot_calendar import Calendar, CallbackData, RUSSIAN_LANGUAGE
+from telebot_calendar import Calendar, RUSSIAN_LANGUAGE
 
-calendar = Calendar(language=RUSSIAN_LANGUAGE)
-callback_add = CallbackData('date_meeting', 'action', 'year', 'month', 'day')
+calendar_meeting = Calendar(language=RUSSIAN_LANGUAGE)
+calendar_day_off = Calendar(language=RUSSIAN_LANGUAGE)
 
 
 # region utils
@@ -308,8 +308,8 @@ class MeetingFunctions:
         now = datetime.datetime.now()
         self.bot.send_message(
             message.chat.id, 'Выберите дату',
-            reply_markup=calendar.create_calendar(name=f'date_meeting_group_id{meeting_chat_id}',
-                                                  year=now.year, month=now.month)
+            reply_markup=calendar_meeting.create_calendar(name=f'date_meeting_group_id{meeting_chat_id}',
+                                                          year=now.year, month=now.month)
         )
 
     def delete_day_off(self, call):
@@ -329,11 +329,11 @@ class MeetingFunctions:
         now = datetime.datetime.now()
         self.bot.send_message(
             call.message.chat.id, 'Выберите дату',
-            reply_markup=calendar.create_calendar(name='date_day_off', year=now.year, month=now.month)
+            reply_markup=calendar_day_off.create_calendar(name='date_day_off', year=now.year, month=now.month)
         )
 
-    def add_day_off_(self, message, **kwargs):
-        m_root.insert_day_off(kwargs['date'])
+    def add_day_off_(self, message, date_):
+        m_root.insert_day_off(date_)
         self.bot.send_message(message.chat.id, 'Добавил ✅')
 
     def request_week_day(self, message, meeting_chat_id, week_period: int = 0):
