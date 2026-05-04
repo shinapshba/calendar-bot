@@ -4,7 +4,7 @@ from dto import Chat
 
 MEETING_BASE_COLS = 'chat_id, chat_title, username, place, description, notify_lag_min'
 
-__DATABASE_FILE = '../database.db'
+__DATABASE_FILE = 'database.db'
 __SELECT_DAY_OFF = 'SELECT date FROM day_off'
 __INSERT_DAY_OFF = 'INSERT INTO day_off VALUES (?)'
 __DELETE_DAY_OFF = 'DELETE FROM day_off'
