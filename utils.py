@@ -58,4 +58,4 @@ def get_current_datetime():
     return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 def get_current_date():
-    return datetime.date.today().strftime("%Y-%m-%d")
+    return datetime.date.today().strftime('%Y-%m-%d')
