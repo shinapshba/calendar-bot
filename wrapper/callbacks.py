@@ -6,6 +6,7 @@ from telebot_calendar import Calendar, CallbackData, RUSSIAN_LANGUAGE
 
 calendar = Calendar(language=RUSSIAN_LANGUAGE)
 callback_add = CallbackData('date_meeting', 'action', 'year', 'month', 'day')
+callback_day_off_add = CallbackData('date_day_off', 'action', 'year', 'month', 'day')
 
 
 class MeetingCallbackHandlers:
@@ -35,6 +36,20 @@ class MeetingCallbackHandlers:
                 self.bot.register_next_step_handler_by_chat_id(
                     call.message.chat.id, self.meeting_functions.request_time_handler, **kwargs
                 )
+
+    def day_off_date_callback_handler(self, call):
+        name, action, year, month, day = call.data.split(callback_day_off_add.sep)
+        date_ = calendar.calendar_query_handler(
+            bot=self.bot, call=call, name=name, action=action, year=year, month=month, day=day  # noqa
+        )
+        if action == 'DAY':
+            date_ = date_.date()
+            if date_ < datetime.date.today():
+                self.bot.send_message(call.message.chat.id, 'Нельзя указывать прошедшую дату 😐')
+            else:
+                kwargs = { 'date': date_ }
+                self.bot.register_next_step_handler_by_chat_id(call.message.chat.id,
+                                                               self.meeting_functions.add_day_off_, **kwargs)
 
     def add_meeting_group_id_callback_handler(self, call, prefix):
         meeting_chat_id = call.data.replace(prefix, '')

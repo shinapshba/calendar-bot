@@ -80,5 +80,9 @@ CREATE TABLE IF NOT EXISTS meeting_monthly (
     is_notified    INTEGER DEFAULT (0)
 );
 
+CREATE TABLE day_off (
+    date TEXT NOT NULL
+);
+
 COMMIT TRANSACTION;
 PRAGMA foreign_keys = on;
