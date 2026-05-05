@@ -1,10 +1,10 @@
 class Day:
     def __init__(self, date: str, weekday: str, work_type: str, work_hours: int, title: str):
-        self.date = date  # date
-        self.weekday = weekday  # weekday.name
-        self.work_type = work_type  # type.name
-        self.work_hours = work_hours  # working_hours
-        self.title = title  # title
+        self.date = date
+        self.weekday = weekday
+        self.work_type = work_type
+        self.work_hours = work_hours
+        self.title = title
 
     def to_string(self):
         if self.title is not None:
@@ -20,11 +20,11 @@ class Day:
 
 class Week:
     def __init__(self, days: list, title: str, work_hours: int, start_date: str, end_date: str):
-        self.days = days  # days
-        self.title = title  # work_week.name
-        self.work_hours = work_hours  # statistics.working_hours
-        self.start_date = start_date  # dt_start
-        self.end_date = end_date  # dt_end
+        self.days = days
+        self.title = title
+        self.work_hours = work_hours
+        self.start_date = start_date
+        self.end_date = end_date
 
     def to_string(self):
         days_text = ';\n'.join(list(map(lambda d: f' - {d.to_string()}', self.days))) + '.'
@@ -45,13 +45,13 @@ class Week:
 class Month:
     def __init__(self, days, work_days: int, weekends: int, holidays: int, work_hours: int,
                  start_date: str, end_date: str):
-        self.days = days  # days
-        self.work_days = work_days  # statistics.work_days
-        self.weekends = weekends  # statistics.weekends
-        self.holidays = holidays  # statistics.holidays
-        self.work_hours = work_hours  # statistics.working_hours
-        self.start_date = start_date  # dt_start
-        self.end_date = end_date  # dt_end
+        self.days = days
+        self.work_days = work_days
+        self.weekends = weekends
+        self.holidays = holidays
+        self.work_hours = work_hours
+        self.start_date = start_date
+        self.end_date = end_date
 
     def to_string(self):
         days_text = ';\n'.join(list(map(lambda d: f' - {d.to_string()}', self.days))) + '.'
@@ -75,12 +75,12 @@ class Quarter:
     def __init__(self, days, work_days: int, weekends: int, holidays: int, work_hours: int,
                  start_date: str, end_date: str):
         self.days = days  # days
-        self.work_days = work_days  # statistics.work_days
-        self.weekends = weekends  # statistics.weekends
-        self.holidays = holidays  # statistics.holidays
-        self.work_hours = work_hours  # statistics.working_hours
-        self.start_date = start_date  # dt_start
-        self.end_date = end_date  # dt_end
+        self.work_days = work_days
+        self.weekends = weekends
+        self.holidays = holidays
+        self.work_hours = work_hours
+        self.start_date = start_date
+        self.end_date = end_date
 
     def to_string(self):
         days_text = ';\n'.join(list(map(lambda d: f' - {d.to_string()}', self.days))) + '.'
