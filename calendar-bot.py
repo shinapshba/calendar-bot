@@ -87,15 +87,15 @@ COMMANDS_ADMIN = {
 
 COMMANDS_PRODUCTION = {
     9: {
-        'name': 'Текущая неделя',
+        'name': 'Показать текущую неделю',
         'function': functions_production.week
     },
     10: {
-        'name': 'Текущий месяц',
+        'name': 'Показать текущий месяц',
         'function': functions_production.month
     },
     11: {
-        'name': 'Текущий квартал',
+        'name': 'Показать текущий квартал',
         'function': functions_production.quarter
     }
 }
