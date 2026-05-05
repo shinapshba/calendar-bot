@@ -55,7 +55,8 @@ class Month:
 
     def to_string(self):
         days_text = ';\n'.join(list(map(lambda d: f' - {d.to_string()}', self.days))) + '.'
-        return (f'Период с {self.start_date} по {self.end_date}\n'
+        return (f'Месяц\n'
+                f'Период с {self.start_date} по {self.end_date}\n'
                 f'Рабочих часов {self.work_hours}\n'
                 f'Рабочих дней {self.work_days}\n'
                 f'Выходных дней {self.weekends}\n'
@@ -84,7 +85,8 @@ class Quarter:
 
     def to_string(self):
         days_text = ';\n'.join(list(map(lambda d: f' - {d.to_string()}', self.days))) + '.'
-        return (f'Период с {self.start_date} по {self.end_date}\n'
+        return (f'Квартал\n'
+                f'Период с {self.start_date} по {self.end_date}\n'
                 f'Рабочих часов {self.work_hours}\n'
                 f'Рабочих дней {self.work_days}\n'
                 f'Выходных дней {self.weekends}\n'
