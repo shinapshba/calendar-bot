@@ -30,7 +30,8 @@ class BotExceptionHandler(telebot.ExceptionHandler):
 
 commands_default = [
     BotCommand('/start', 'Начало работы'),
-    BotCommand('/meeting', 'Работа со встречами')
+    BotCommand('/meeting', 'Работа со встречами'),
+    BotCommand('/production', 'Производственный календарь')
 ]
 
 commands_admin = [
@@ -43,6 +44,7 @@ bot.set_my_commands(commands=commands_default + commands_admin, scope=BotCommand
 
 functions_admin = functions.AdminFunctions(bot)
 functions_meeting = functions.MeetingFunctions(bot)
+functions_production = functions.ProductionFunctions(bot, model_root.select_production_calendar_token())
 callbacks_meeting = callbacks.MeetingCallbackHandlers(functions_meeting)
 
 COMMANDS_MEETING = {
@@ -83,6 +85,21 @@ COMMANDS_ADMIN = {
     }
 }
 
+COMMANDS_PRODUCTION = {
+    9: {
+        'name': 'Текущая неделя',
+        'function': functions_production.week
+    },
+    10: {
+        'name': 'Текущий месяц',
+        'function': functions_production.month
+    },
+    11: {
+        'name': 'Текущий квартал',
+        'function': functions_production.quarter
+    }
+}
+
 
 # region root commands
 @bot.message_handler(commands=['start'])
@@ -114,6 +131,16 @@ def admin(message):
     bot.send_message(message.chat.id, 'Выберите действие', reply_markup=markup)
 
 
+@bot.message_handler(commands=['production'])
+def admin(message):
+    markup = InlineKeyboardMarkup()
+    markup.row_width = 6
+    for key, value in COMMANDS_PRODUCTION.items():
+        markup.add(InlineKeyboardButton(text=value['name'], callback_data=f'command_{key}'))
+    functions.add_cancel_button(markup)
+    bot.send_message(message.chat.id, 'Выберите действие', reply_markup=markup)
+
+
 # endregion
 
 # region root handlers
@@ -124,6 +151,8 @@ def command_callback_handler(call):
         COMMANDS_MEETING[command_id]['function'](call)  # noqa
     if command_id in COMMANDS_ADMIN:
         COMMANDS_ADMIN[command_id]['function'](call)  # noqa
+    if command_id in COMMANDS_PRODUCTION:
+        COMMANDS_PRODUCTION[command_id]['function'](call)  # noqa
     bot.delete_message(call.message.chat.id, call.message.message_id)
 
 

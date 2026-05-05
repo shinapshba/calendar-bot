@@ -12,6 +12,8 @@ from model import meeting_monthly as m_meeting_monthly
 from model import meeting_weekly as m_meeting_weekly
 from model import meeting_weekly_double as m_meeting_weekly_double
 from dto import Meeting, MeetingDaily, MeetingWeekly, MeetingWeeklyDouble, MeetingMonthly
+from integration.production import ProductionCalendar
+from integration.dto import Week, Month, Quarter
 
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from telebot_calendar import Calendar, RUSSIAN_LANGUAGE
@@ -452,3 +454,29 @@ class MeetingFunctions:
                                   parse_mode='HTML')
         if message.chat.type == 'private':
             self.bot.send_message(message.chat.id, text=f'Запланировал ✅')
+
+
+class ProductionFunctions:
+    def __init__(self, bot, api_token):
+        self.production_calendar = ProductionCalendar(api_token)
+        self.bot = bot
+
+    def week(self, call):
+        week = Week.from_dict(self.production_calendar.get_current_week().json())
+        text = week.to_string()
+        self.bot.send_message(call.message.chat.id, text)
+
+    def month(self, call):
+        month = Month.from_dict(self.production_calendar.get_current_month().json())
+        text = month.to_string()
+        self.bot.send_message(call.message.chat.id, text)
+
+    def quarter(self, call):
+        quarter = Quarter.from_dict(self.production_calendar.get_current_quarter().json())
+        text = quarter.to_string()
+        if len(text) < 4000:
+            self.bot.send_message(call.message.chat.id, text)
+            return
+        texts = [text[i:i + 4000] for i in range(0, len(text), 4000)]
+        for t in texts:
+            self.bot.send_message(call.message.chat.id, t)

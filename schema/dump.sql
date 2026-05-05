@@ -9,6 +9,10 @@ CREATE TABLE IF NOT EXISTS token (
     data TEXT NOT NULL
 );
 
+CREATE TABLE production_calendar_token (
+    data TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS chat (
     chat_id     TEXT NOT NULL UNIQUE,
     username    TEXT,

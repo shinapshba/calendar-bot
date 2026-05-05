@@ -9,6 +9,7 @@ __SELECT_DAY_OFF = 'SELECT date FROM day_off'
 __INSERT_DAY_OFF = 'INSERT INTO day_off VALUES (?)'
 __DELETE_DAY_OFF = 'DELETE FROM day_off'
 __SELECT_TOKEN = 'SELECT data FROM token'
+__SELECT_PRODUCTION_CALENDAR_TOKEN = 'SELECT data FROM production_calendar_token'
 __IS_SUPER_USER = 'SELECT COUNT(*) FROM super_user WHERE username=?'
 __SELECT_ALL_CHATS = 'SELECT * FROM chat'
 __UPSERT_CHAT = '''INSERT INTO chat(chat_id, username, title) VALUES(?, ?, ?) ON CONFLICT(chat_id) DO UPDATE SET 
@@ -59,6 +60,10 @@ def is_super_user(username):
 
 def select_token():
     return fetchone(__SELECT_TOKEN)
+
+
+def select_production_calendar_token():
+    return fetchone(__SELECT_PRODUCTION_CALENDAR_TOKEN)
 
 
 def upsert_chat(chat_id, username, title):
