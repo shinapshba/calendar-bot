@@ -100,3 +100,33 @@ class Quarter:
         return Month(days, data['statistics']['work_days'], data['statistics']['weekends'],
                      data['statistics']['holidays'], data['statistics']['working_hours'],
                      data['dt_start'], data['dt_end'])
+
+
+class Year:
+    def __init__(self, days, work_days: int, weekends: int, holidays: int, work_hours: int,
+                 start_date: str, end_date: str):
+        self.days = days  # days
+        self.work_days = work_days
+        self.weekends = weekends
+        self.holidays = holidays
+        self.work_hours = work_hours
+        self.start_date = start_date
+        self.end_date = end_date
+
+    def to_string(self):
+        days_text = ';\n'.join(list(map(lambda d: f' - {d.to_string()}', self.days))) + '.'
+        return (f'Год\n'
+                f'Период с {self.start_date} по {self.end_date}\n'
+                f'Рабочих часов {self.work_hours}\n'
+                f'Рабочих дней {self.work_days}\n'
+                f'Выходных дней {self.weekends}\n'
+                f'Праздничных дней {self.holidays}\nДни:\n' + days_text)
+
+    @staticmethod
+    def from_dict(data: dict):
+        days = []
+        for day_item in data['days']:
+            days.append(Day.from_dict(day_item))
+        return Month(days, data['statistics']['work_days'], data['statistics']['weekends'],
+                     data['statistics']['holidays'], data['statistics']['working_hours'],
+                     data['dt_start'], data['dt_end'])

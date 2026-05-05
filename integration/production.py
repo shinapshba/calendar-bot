@@ -32,3 +32,6 @@ class ProductionCalendar:
 
     def get_current_quarter(self):
         return self.__process_current_period('current-quarter')
+
+    def get_current_year(self):
+        return self.__process_current_period('current-year')

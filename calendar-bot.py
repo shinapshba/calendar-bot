@@ -4,6 +4,7 @@ import schedule
 import datetime
 import time
 import traceback
+import os
 
 from wrapper import functions, callbacks
 from model import root as model_root
@@ -87,16 +88,20 @@ COMMANDS_ADMIN = {
 
 COMMANDS_PRODUCTION = {
     9: {
-        'name': 'Показать текущую неделю',
+        'name': 'Неделя',
         'function': functions_production.week
     },
     10: {
-        'name': 'Показать текущий месяц',
+        'name': 'Месяц',
         'function': functions_production.month
     },
     11: {
-        'name': 'Показать текущий квартал',
+        'name': 'Квартал',
         'function': functions_production.quarter
+    },
+    12: {
+        'name': 'Год',
+        'function': functions_production.year
     }
 }
 
@@ -138,7 +143,7 @@ def admin(message):
     for key, value in COMMANDS_PRODUCTION.items():
         markup.add(InlineKeyboardButton(text=value['name'], callback_data=f'command_{key}'))
     functions.add_cancel_button(markup)
-    bot.send_message(message.chat.id, 'Выберите действие', reply_markup=markup)
+    bot.send_message(message.chat.id, 'Выберите текущий период', reply_markup=markup)
 
 
 # endregion
@@ -237,6 +242,7 @@ def handle_exceptions(func):
 
     return wrapper
 
+
 def skip_in_day_off(func):
     def wrapper(*args, **kwargs):
         if model_root.is_day_off(utils.get_current_date()):
@@ -244,6 +250,7 @@ def skip_in_day_off(func):
         return func(*args, **kwargs)
 
     return wrapper
+
 
 @skip_in_day_off
 @handle_exceptions
@@ -253,6 +260,7 @@ def check_meetings_by_notification_day():
     for m in meetings_to_notify:
         bot.send_message(m.chat_id, m.get_notify_text(), parse_mode='HTML')
         model_meeting.update_meeting_notify_flag_day(m.id_)
+
 
 @skip_in_day_off
 @handle_exceptions
@@ -265,6 +273,7 @@ def check_meetings_by_notification_min():
         bot.send_message(m.chat_id, m.get_notify_text(), parse_mode='HTML')
         model_meeting.update_meeting_notify_flag_min(m.id_)
 
+
 @skip_in_day_off
 @handle_exceptions
 def check_meetings_daily():
@@ -276,6 +285,7 @@ def check_meetings_daily():
     for m in meetings_to_notify:
         bot.send_message(m.chat_id, m.get_notify_text(), parse_mode='HTML')
         model_meeting_daily.update_meetings_daily(m.id_)
+
 
 @skip_in_day_off
 @handle_exceptions
@@ -292,6 +302,7 @@ def check_meetings_weekly():
         bot.send_message(m.chat_id, m.get_notify_text(), parse_mode='HTML')
         model_meeting_weekly.update_meetings_weekly(m.id_)
 
+
 @skip_in_day_off
 @handle_exceptions
 def check_meetings_monthly():
@@ -306,6 +317,7 @@ def check_meetings_monthly():
     for m in meetings_to_notify:
         bot.send_message(m.chat_id, m.get_notify_text(), parse_mode='HTML')
         model_meeting_monthly.update_meetings_monthly(m.id_)
+
 
 @skip_in_day_off
 @handle_exceptions
@@ -349,6 +361,8 @@ Thread(target=run_schedule).start()
 
 # endregion
 
+if not os.path.exists('./tmp'):
+    os.mkdir('./tmp')
 
 updates = bot.get_updates()
 if updates:

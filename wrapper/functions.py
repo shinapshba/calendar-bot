@@ -13,7 +13,8 @@ from model import meeting_weekly as m_meeting_weekly
 from model import meeting_weekly_double as m_meeting_weekly_double
 from dto import Meeting, MeetingDaily, MeetingWeekly, MeetingWeeklyDouble, MeetingMonthly
 from integration.production import ProductionCalendar
-from integration.dto import Week, Month, Quarter
+from integration.dto import Week, Month, Quarter, Year
+from integration import excel
 
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from telebot_calendar import Calendar, RUSSIAN_LANGUAGE
@@ -461,22 +462,30 @@ class ProductionFunctions:
         self.production_calendar = ProductionCalendar(api_token)
         self.bot = bot
 
+    def _safe_send(self, chat_id, file_name):
+        try:
+            with open(file_name, 'rb') as file:
+                self.bot.send_document(chat_id, file, visible_file_name='Инфо.xlsx')
+        finally:
+            if os.path.exists(file_name):
+                os.remove(file_name)
+
     def week(self, call):
         week = Week.from_dict(self.production_calendar.get_current_week().json())
-        text = week.to_string()
-        self.bot.send_message(call.message.chat.id, text)
+        file_name = excel.create_file_week(week)
+        self._safe_send(call.message.chat.id, file_name)
 
     def month(self, call):
         month = Month.from_dict(self.production_calendar.get_current_month().json())
-        text = month.to_string()
-        self.bot.send_message(call.message.chat.id, text)
+        file_name = excel.create_file_month(month)
+        self._safe_send(call.message.chat.id, file_name)
 
     def quarter(self, call):
         quarter = Quarter.from_dict(self.production_calendar.get_current_quarter().json())
-        text = quarter.to_string()
-        if len(text) < 4000:
-            self.bot.send_message(call.message.chat.id, text)
-            return
-        texts = [text[i:i + 4000] for i in range(0, len(text), 4000)]
-        for t in texts:
-            self.bot.send_message(call.message.chat.id, t)
+        file_name = excel.create_file_quarter(quarter)
+        self._safe_send(call.message.chat.id, file_name)
+
+    def year(self, call):
+        year = Year.from_dict(self.production_calendar.get_current_year().json())
+        file_name = excel.create_file_year(year)
+        self._safe_send(call.message.chat.id, file_name)
