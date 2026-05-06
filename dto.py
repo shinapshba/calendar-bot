@@ -242,3 +242,9 @@ class MeetingMonthly(MeetingBase):
 
     def get_view_short(self):
         return f'Каждое {self.day_of_month}ое число'
+
+
+class SentNotify:
+    def __init__(self, chat_id, message_id):
+        self.chat_id = chat_id
+        self.message_id = message_id

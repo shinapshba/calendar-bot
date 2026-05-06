@@ -1,6 +1,6 @@
 import sqlite3
 
-from dto import Chat
+from dto import Chat, SentNotify
 
 MEETING_BASE_COLS = 'chat_id, chat_title, username, place, description, notify_lag_min'
 
@@ -12,6 +12,9 @@ __SELECT_TOKEN = 'SELECT data FROM token'
 __SELECT_PRODUCTION_CALENDAR_TOKEN = 'SELECT data FROM production_calendar_token'
 __IS_SUPER_USER = 'SELECT COUNT(*) FROM super_user WHERE username=?'
 __SELECT_ALL_CHATS = 'SELECT * FROM chat'
+__SELECT_SENT_NOTIFY = 'SELECT * FROM sent_notify'
+__INSERT_SENT_NOTIFY = 'INSERT INTO sent_notify VALUES(?, ?)'
+__DELETE_SENT_NOTIFY = 'DELETE FROM sent_notify'
 __UPSERT_CHAT = '''INSERT INTO chat(chat_id, username, title) VALUES(?, ?, ?) ON CONFLICT(chat_id) DO UPDATE SET 
 username=excluded.username, title=excluded.title'''
 
@@ -85,3 +88,12 @@ def insert_day_off(day_date: str):
 
 def delete_day_off():
     execute(__DELETE_DAY_OFF)
+
+def select_sent_notify():
+    return fetchall(__SELECT_SENT_NOTIFY, lambda cursor, row: SentNotify(row[0], row[1]))
+
+def insert_sent_notify(chat_id, message_id):
+    execute(__INSERT_SENT_NOTIFY, (chat_id, message_id,))
+
+def delete_sent_notify():
+    execute(__DELETE_SENT_NOTIFY)

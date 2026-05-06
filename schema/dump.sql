@@ -88,5 +88,10 @@ CREATE TABLE day_off (
     date TEXT NOT NULL
 );
 
+CREATE TABLE sent_notify (
+    chat_id    TEXT NOT NULL,
+    message_id TEXT NOT NULL
+);
+
 COMMIT TRANSACTION;
 PRAGMA foreign_keys = on;

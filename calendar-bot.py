@@ -222,8 +222,9 @@ def check_meetings_by_notification_min():
         filter(lambda m_: utils.is_datetime_delta_passed_minutes(m_.date_time, int(m_.notify_lag_min)), meetings)
     )
     for m in meetings_to_notify:
-        bot.send_message(m.chat_id, m.get_notify_text(), parse_mode='HTML')
+        sent_message = bot.send_message(m.chat_id, m.get_notify_text(), parse_mode='HTML')
         model_meeting.update_meeting_notify_flag_min(m.id_)
+        model_root.insert_sent_notify(sent_message.chat.id, sent_message.message_id)
 
 
 @skip_in_day_off
@@ -235,8 +236,9 @@ def check_meetings_daily():
                           utils.is_time_delta_passed_minutes(m_.time_, int(m_.notify_lag_min)), meetings)
     )
     for m in meetings_to_notify:
-        bot.send_message(m.chat_id, m.get_notify_text(), parse_mode='HTML')
+        sent_message = bot.send_message(m.chat_id, m.get_notify_text(), parse_mode='HTML')
         model_meeting_daily.update_meetings_daily(m.id_)
+        model_root.insert_sent_notify(sent_message.chat.id, sent_message.message_id)
 
 
 @skip_in_day_off
@@ -251,8 +253,9 @@ def check_meetings_weekly():
         )
     )
     for m in meetings_to_notify:
-        bot.send_message(m.chat_id, m.get_notify_text(), parse_mode='HTML')
+        sent_message = bot.send_message(m.chat_id, m.get_notify_text(), parse_mode='HTML')
         model_meeting_weekly.update_meetings_weekly(m.id_)
+        model_root.insert_sent_notify(sent_message.chat.id, sent_message.message_id)
 
 
 @skip_in_day_off
@@ -267,8 +270,9 @@ def check_meetings_monthly():
         )
     )
     for m in meetings_to_notify:
-        bot.send_message(m.chat_id, m.get_notify_text(), parse_mode='HTML')
+        sent_message = bot.send_message(m.chat_id, m.get_notify_text(), parse_mode='HTML')
         model_meeting_monthly.update_meetings_monthly(m.id_)
+        model_root.insert_sent_notify(sent_message.chat.id, sent_message.message_id)
 
 
 @skip_in_day_off
@@ -284,8 +288,9 @@ def check_meetings_weekly_double():
         )
     )
     for m in meetings_to_notify:
-        bot.send_message(m.chat_id, m.get_notify_text(), parse_mode='HTML')
+        sent_message = bot.send_message(m.chat_id, m.get_notify_text(), parse_mode='HTML')
         model_meeting_weekly_double.update_meetings_weekly_double(m.id_)
+        model_root.insert_sent_notify(sent_message.chat.id, sent_message.message_id)
 
 
 @handle_exceptions
@@ -296,6 +301,18 @@ def backup_meetings_daily():
     model_meeting_weekly_double.backup_meetings_weekly_double()
 
 
+@handle_exceptions
+def delete_sent_notifies():
+    sent_notifies = model_root.select_sent_notify()
+    if sent_notifies is not None and len(sent_notifies) != 0:
+        for notify in sent_notifies:
+            try:
+                bot.delete_message(notify.chat_id, notify.message_id)
+            except:  # noqa
+                pass
+    model_root.delete_sent_notify()
+
+
 def run_schedule():
     while True:
         schedule.run_pending()
@@ -304,6 +321,7 @@ def run_schedule():
 
 schedule.every().day.at('17:00').do(check_meetings_by_notification_day)
 schedule.every().day.at('00:00').do(backup_meetings_daily)
+schedule.every().day.at('01:00').do(delete_sent_notifies)
 schedule.every(1).minute.do(check_meetings_by_notification_min)
 schedule.every(1).minute.do(check_meetings_daily)
 schedule.every(1).minute.do(check_meetings_weekly)
