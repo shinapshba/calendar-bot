@@ -7,6 +7,7 @@ import traceback
 import os
 
 from wrapper import functions, callbacks
+from functions_dict import FunctionsDict
 from model import root as model_root
 from model import meeting as model_meeting
 from model import meeting_daily as model_meeting_daily
@@ -40,70 +41,21 @@ commands_admin = [
 ]
 
 bot = telebot.TeleBot(model_root.select_token(), exception_handler=BotExceptionHandler())
+bot.delete_my_commands()
 bot.set_my_commands(commands=commands_default, scope=BotCommandScopeDefault())
 bot.set_my_commands(commands=commands_default + commands_admin, scope=BotCommandScopeAllPrivateChats())
 
 functions_admin = functions.AdminFunctions(bot)
 functions_meeting = functions.MeetingFunctions(bot)
 functions_production = functions.ProductionFunctions(bot, model_root.select_production_calendar_token())
+functions_dict = FunctionsDict(bot, functions_admin, functions_meeting, functions_production)
+
 callbacks_meeting = callbacks.MeetingCallbackHandlers(functions_meeting)
+callbacks_admin = callbacks.AdminCallbackHandlers(functions_admin)
 
-COMMANDS_MEETING = {
-    1: {
-        'name': 'Добавить встречу',
-        'function': functions_meeting.add
-    },
-    2: {
-        'name': 'Удалить встречу',
-        'function': functions_meeting.delete
-    },
-    3: {
-        'name': 'Показать встречи',
-        'function': functions_meeting.show
-    }
-}
-
-COMMANDS_ADMIN = {
-    4: {
-        'name': 'Просмотр пользователей',
-        'function': functions_admin.show_users
-    },
-    5: {
-        'name': 'Файл логов',
-        'function': functions_admin.logs
-    },
-    6: {
-        'name': 'Просмотр выходных',
-        'function': functions_meeting.show_day_off
-    },
-    7: {
-        'name': 'Добавить выходной',
-        'function': functions_meeting.add_day_off
-    },
-    8: {
-        'name': 'Удалить выходные',
-        'function': functions_meeting.delete_day_off
-    }
-}
-
-COMMANDS_PRODUCTION = {
-    9: {
-        'name': 'Неделя',
-        'function': functions_production.week
-    },
-    10: {
-        'name': 'Месяц',
-        'function': functions_production.month
-    },
-    11: {
-        'name': 'Квартал',
-        'function': functions_production.quarter
-    },
-    12: {
-        'name': 'Год',
-        'function': functions_production.year
-    }
-}
+COMMANDS_MEETING = functions_dict.get_commands_meeting()
+COMMANDS_ADMIN = functions_dict.get_commands_admin()
+COMMANDS_PRODUCTION = functions_dict.get_commands_production()
 
 
 # region root commands
@@ -186,7 +138,7 @@ def meeting_calendar_callback_handler(call):
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('date_day_off'))
 def day_off_calendar_callback_handler(call):
-    callbacks_meeting.day_off_date_callback_handler(call)
+    callbacks_admin.day_off_date_callback_handler(call)
 
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('add_meeting_regular_flg'))

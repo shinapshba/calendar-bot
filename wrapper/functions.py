@@ -166,6 +166,30 @@ class AdminFunctions:
             return
         self.bot.send_message(call.message.chat.id, text)
 
+    def show_day_off(self, call):
+        days = m_root.select_day_off()
+        if len(days) == 0:
+            self.bot.send_message(call.message.chat.id, 'Нет запланированных выходных')
+            return
+        days = list(map(lambda d: f'* {d}', days))
+        text = 'Выходные:\n' + '\n'.join(days)
+        self.bot.send_message(call.message.chat.id, text)
+
+    def delete_day_off(self, call):
+        m_root.delete_day_off()
+        self.bot.send_message(call.message.chat.id, 'Удалил ✅')
+
+    def add_day_off(self, call):
+        now = datetime.datetime.now()
+        self.bot.send_message(
+            call.message.chat.id, 'Выберите дату',
+            reply_markup=calendar_day_off.create_calendar(name='date_day_off', year=now.year, month=now.month)
+        )
+
+    def add_day_off_(self, message, date_):
+        m_root.insert_day_off(date_)
+        self.bot.send_message(message.chat.id, 'Добавил ✅')
+
 
 class MeetingFunctions:
     def __init__(self, bot):
@@ -314,30 +338,6 @@ class MeetingFunctions:
             reply_markup=calendar_meeting.create_calendar(name=f'date_meeting_group_id{meeting_chat_id}',
                                                           year=now.year, month=now.month)
         )
-
-    def delete_day_off(self, call):
-        m_root.delete_day_off()
-        self.bot.send_message(call.message.chat.id, 'Удалил ✅')
-
-    def show_day_off(self, call):
-        days = m_root.select_day_off()
-        if len(days) == 0:
-            self.bot.send_message(call.message.chat.id, 'Нет запланированных выходных')
-            return
-        days = list(map(lambda d: f'* {d}', days))
-        text = 'Выходные:\n' + '\n'.join(days)
-        self.bot.send_message(call.message.chat.id, text)
-
-    def add_day_off(self, call):
-        now = datetime.datetime.now()
-        self.bot.send_message(
-            call.message.chat.id, 'Выберите дату',
-            reply_markup=calendar_day_off.create_calendar(name='date_day_off', year=now.year, month=now.month)
-        )
-
-    def add_day_off_(self, message, date_):
-        m_root.insert_day_off(date_)
-        self.bot.send_message(message.chat.id, 'Добавил ✅')
 
     def request_week_day(self, message, meeting_chat_id, week_period: int = 0):
         markup = InlineKeyboardMarkup()
