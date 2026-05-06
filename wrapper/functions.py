@@ -16,7 +16,7 @@ from integration.production import ProductionCalendar
 from integration.dto import Week, Month, Quarter, Year
 from integration import excel
 
-from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup
 from telebot_calendar import Calendar, RUSSIAN_LANGUAGE
 
 calendar_meeting = Calendar(language=RUSSIAN_LANGUAGE)
@@ -24,6 +24,11 @@ calendar_day_off = Calendar(language=RUSSIAN_LANGUAGE)
 
 
 # region utils
+menu = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True, selective=True)
+menu.row('Встречи 🗣️', 'Управление ⚙️')
+menu.row('Производственный календарь 📅')
+
+
 def raise_error(bot, chat_id, text):
     bot.send_message(chat_id, text)
     raise Exception(text)
@@ -144,13 +149,13 @@ class AdminFunctions:
     @staticmethod
     def __send_logs_file_async(bot, chat_id):
         if not os.path.exists(AdminFunctions.LOG_FILE):
-            bot.send_message(chat_id, 'Файл логов не найден')
+            bot.send_message(chat_id, 'Файл логов не найден', reply_markup=menu)
             return
         if os.path.getsize(AdminFunctions.LOG_FILE) == 0:
-            bot.send_message(chat_id, 'Файл логов пуст')
+            bot.send_message(chat_id, 'Файл логов пуст', reply_markup=menu)
             return
         with open(AdminFunctions.LOG_FILE, 'rb') as log_file:
-            bot.send_document(chat_id, log_file)
+            bot.send_document(chat_id, log_file, reply_markup=menu)
 
     def logs(self, call):
         thread = threading.Thread(target=AdminFunctions.__send_logs_file_async,
@@ -162,22 +167,22 @@ class AdminFunctions:
         chats = m_root.select_all_chats()
         text = '\n'.join(sorted(list(map(lambda c: c.to_string(), chats))))
         if len(text) == 0:
-            self.bot.send_message(call.message.chat.id, 'Список пользователей пуст')
+            self.bot.send_message(call.message.chat.id, 'Список пользователей пуст', reply_markup=menu)
             return
-        self.bot.send_message(call.message.chat.id, text)
+        self.bot.send_message(call.message.chat.id, text, reply_markup=menu)
 
     def show_day_off(self, call):
         days = m_root.select_day_off()
         if len(days) == 0:
-            self.bot.send_message(call.message.chat.id, 'Нет запланированных выходных')
+            self.bot.send_message(call.message.chat.id, 'Нет запланированных выходных', reply_markup=menu)
             return
         days = list(map(lambda d: f'* {d}', days))
         text = 'Выходные:\n' + '\n'.join(days)
-        self.bot.send_message(call.message.chat.id, text)
+        self.bot.send_message(call.message.chat.id, text, reply_markup=menu)
 
     def delete_day_off(self, call):
         m_root.delete_day_off()
-        self.bot.send_message(call.message.chat.id, 'Удалил ✅')
+        self.bot.send_message(call.message.chat.id, 'Удалил ✅', reply_markup=menu)
 
     def add_day_off(self, call):
         now = datetime.datetime.now()
@@ -188,7 +193,7 @@ class AdminFunctions:
 
     def add_day_off_(self, message, date_):
         m_root.insert_day_off(date_)
-        self.bot.send_message(message.chat.id, 'Добавил ✅')
+        self.bot.send_message(message.chat.id, 'Добавил ✅', reply_markup=menu)
 
 
 class MeetingFunctions:
@@ -232,7 +237,7 @@ class MeetingFunctions:
                 len(meetings_weekly) +
                 len(meetings_weekly_double) +
                 len(meetings_monthly) == 0):
-            self.bot.send_message(call.message.chat.id, 'Нет встреч 💅')
+            self.bot.send_message(call.message.chat.id, 'Нет встреч 💅', reply_markup=menu)
             return
 
         meeting_views = []
@@ -249,7 +254,7 @@ class MeetingFunctions:
             meeting_views += list(map(lambda mm: f' * {mm.get_view_short()}', meetings_monthly))
             meeting_views += list(map(lambda mwd: f' * {mwd.get_view_short()}', meetings_weekly_double))
         meeting_views.sort()
-        self.bot.send_message(call.message.chat.id, 'Встречи:\n' + '\n'.join(meeting_views))
+        self.bot.send_message(call.message.chat.id, 'Встречи:\n' + '\n'.join(meeting_views), reply_markup=menu)
 
     def delete(self, call):
         if call.message.chat.type != 'private':
@@ -270,7 +275,7 @@ class MeetingFunctions:
                 len(meetings_weekly) +
                 len(meetings_weekly_double) +
                 len(meetings_monthly) == 0):
-            self.bot.send_message(message.chat.id, 'Нет доступных к удалению встреч 💅')
+            self.bot.send_message(message.chat.id, 'Нет доступных к удалению встреч 💅', reply_markup=menu)
             return
         markup = InlineKeyboardMarkup()
         markup.row_width = 6
@@ -302,7 +307,7 @@ class MeetingFunctions:
             m_meeting_weekly_double.delete_meeting_weekly_double(meeting_id.replace('_doubleweekly', ''))
         else:
             m_meeting.delete_meeting(meeting_id)
-        self.bot.send_message(message.chat.id, 'Удалил встречу ✅')
+        self.bot.send_message(message.chat.id, 'Удалил встречу ✅', reply_markup=menu)
 
     def add(self, call):
         if call.message.chat.type != 'private':
@@ -454,7 +459,7 @@ class MeetingFunctions:
             self.bot.send_message(kwargs['meeting_chat_id'], MeetingWeeklyDouble.get_added_text(is_even, kwargs),
                                   parse_mode='HTML')
         if message.chat.type == 'private':
-            self.bot.send_message(message.chat.id, text=f'Запланировал ✅')
+            self.bot.send_message(message.chat.id, text=f'Запланировал ✅', reply_markup=menu)
 
 
 class ProductionFunctions:
@@ -465,7 +470,7 @@ class ProductionFunctions:
     def _safe_send(self, chat_id, file_name):
         try:
             with open(file_name, 'rb') as file:
-                self.bot.send_document(chat_id, file, visible_file_name='Инфо.xlsx')
+                self.bot.send_document(chat_id, file, visible_file_name='Инфо.xlsx', reply_markup=menu)
         finally:
             if os.path.exists(file_name):
                 os.remove(file_name)

@@ -62,7 +62,7 @@ COMMANDS_PRODUCTION = functions_dict.get_commands_production()
 @bot.message_handler(commands=['start'])
 def start(message):
     model_root.upsert_chat(message.chat.id, message.chat.username, message.chat.title)
-    bot.send_message(message.chat.id, 'Все отлично! Можно работать 👌')
+    bot.send_message(message.chat.id, 'Все отлично! Можно работать 👌', reply_markup=functions.menu)
 
 
 @bot.message_handler(commands=['meeting'])
@@ -73,6 +73,11 @@ def meeting(message):
         markup.add(InlineKeyboardButton(text=value['name'], callback_data=f'command_{key}'))
     functions.add_cancel_button(markup)
     bot.send_message(message.chat.id, 'Выберите действие', reply_markup=markup)
+
+
+@bot.message_handler(func=lambda message: message.chat.type == 'private' and str(message.text) == 'Встречи 🗣️')
+def meeting_menu_button_handler(message):
+    meeting(message)
 
 
 @bot.message_handler(commands=['admin'])
@@ -88,14 +93,25 @@ def admin(message):
     bot.send_message(message.chat.id, 'Выберите действие', reply_markup=markup)
 
 
+@bot.message_handler(func=lambda message: message.chat.type == 'private' and str(message.text) == 'Управление ⚙️')
+def admin_menu_button_handler(message):
+    admin(message)
+
+
 @bot.message_handler(commands=['production'])
-def admin(message):
+def production(message):
     markup = InlineKeyboardMarkup()
     markup.row_width = 6
     for key, value in COMMANDS_PRODUCTION.items():
         markup.add(InlineKeyboardButton(text=value['name'], callback_data=f'command_{key}'))
     functions.add_cancel_button(markup)
     bot.send_message(message.chat.id, 'Выберите текущий период', reply_markup=markup)
+
+
+@bot.message_handler(func=lambda message: message.chat.type == 'private' and
+                                          str(message.text) == 'Производственный календарь 📅')
+def production_menu_button_handler(message):
+    production(message)
 
 
 # endregion
