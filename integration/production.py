@@ -35,3 +35,6 @@ class ProductionCalendar:
 
     def get_current_year(self):
         return self.__process_current_period('current-year')
+
+    def get_current_day(self):
+        return self.__process_current_period('today')

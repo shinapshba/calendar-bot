@@ -13,7 +13,7 @@ from model import meeting_weekly as m_meeting_weekly
 from model import meeting_weekly_double as m_meeting_weekly_double
 from dto import Meeting, MeetingDaily, MeetingWeekly, MeetingWeeklyDouble, MeetingMonthly
 from integration.production import ProductionCalendar
-from integration.dto import Week, Month, Quarter, Year
+from integration.dto import Day, Week, Month, Quarter, Year
 from integration import excel
 
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup
@@ -170,30 +170,6 @@ class AdminFunctions:
             self.bot.send_message(call.message.chat.id, 'Список пользователей пуст', reply_markup=menu)
             return
         self.bot.send_message(call.message.chat.id, text, reply_markup=menu)
-
-    def show_day_off(self, call):
-        days = m_root.select_day_off()
-        if len(days) == 0:
-            self.bot.send_message(call.message.chat.id, 'Нет запланированных выходных', reply_markup=menu)
-            return
-        days = list(map(lambda d: f'* {d}', days))
-        text = 'Выходные:\n' + '\n'.join(days)
-        self.bot.send_message(call.message.chat.id, text, reply_markup=menu)
-
-    def delete_day_off(self, call):
-        m_root.delete_day_off()
-        self.bot.send_message(call.message.chat.id, 'Удалил ✅', reply_markup=menu)
-
-    def add_day_off(self, call):
-        now = datetime.datetime.now()
-        self.bot.send_message(
-            call.message.chat.id, 'Выберите дату',
-            reply_markup=calendar_day_off.create_calendar(name='date_day_off', year=now.year, month=now.month)
-        )
-
-    def add_day_off_(self, message, date_):
-        m_root.insert_day_off(date_)
-        self.bot.send_message(message.chat.id, 'Добавил ✅', reply_markup=menu)
 
 
 class MeetingFunctions:
@@ -494,3 +470,7 @@ class ProductionFunctions:
         year = Year.from_dict(self.production_calendar.get_current_year().json())
         file_name = excel.create_file_year(year)
         self._safe_send(call.message.chat.id, file_name)
+
+    def is_today_day_off(self):
+        day = Day.from_dict(self.production_calendar.get_current_day().json()['days'][0])
+        return day.work_hours == 0

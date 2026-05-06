@@ -152,11 +152,6 @@ def meeting_calendar_callback_handler(call):
     callbacks_meeting.add_meeting_date_callback_handler(call)
 
 
-@bot.callback_query_handler(func=lambda call: call.data.startswith('date_day_off'))
-def day_off_calendar_callback_handler(call):
-    callbacks_admin.day_off_date_callback_handler(call)
-
-
 @bot.callback_query_handler(func=lambda call: call.data.startswith('add_meeting_regular_flg'))
 def add_meeting_callback_handler(call):
     callbacks_meeting.add_meeting_callback_handler(call)
@@ -223,22 +218,25 @@ def skip_in_day_off(func):
 @skip_in_day_off
 @handle_exceptions
 def check_meetings_by_notification_day():
+    is_day_off = functions_production.is_today_day_off()
     meetings = model_meeting.select_meetings_for_notify_by_day()
     meetings_to_notify = list(filter(lambda m_: utils.is_date_tomorrow(m_.date_time), meetings))
     for m in meetings_to_notify:
-        bot.send_message(m.chat_id, m.get_notify_text(), parse_mode='HTML')
+        bot.send_message(m.chat_id, m.get_notify_text(), parse_mode='HTML', disable_notification=is_day_off)
         model_meeting.update_meeting_notify_flag_day(m.id_)
 
 
 @skip_in_day_off
 @handle_exceptions
 def check_meetings_by_notification_min():
+    is_day_off = functions_production.is_today_day_off()
     meetings = model_meeting.select_meetings_for_notify_by_min()
     meetings_to_notify = list(
         filter(lambda m_: utils.is_datetime_delta_passed_minutes(m_.date_time, int(m_.notify_lag_min)), meetings)
     )
     for m in meetings_to_notify:
-        sent_message = bot.send_message(m.chat_id, m.get_notify_text(), parse_mode='HTML')
+        sent_message = bot.send_message(m.chat_id, m.get_notify_text(), parse_mode='HTML',
+                                        disable_notification=is_day_off)
         model_meeting.update_meeting_notify_flag_min(m.id_)
         model_root.insert_sent_notify(sent_message.chat.id, sent_message.message_id)
 
@@ -246,13 +244,15 @@ def check_meetings_by_notification_min():
 @skip_in_day_off
 @handle_exceptions
 def check_meetings_daily():
+    is_day_off = functions_production.is_today_day_off()
     meetings = model_meeting_daily.select_meetings_daily_not_notified()
     meetings_to_notify = list(
         filter(lambda m_: utils.is_current_day_working() and
                           utils.is_time_delta_passed_minutes(m_.time_, int(m_.notify_lag_min)), meetings)
     )
     for m in meetings_to_notify:
-        sent_message = bot.send_message(m.chat_id, m.get_notify_text(), parse_mode='HTML')
+        sent_message = bot.send_message(m.chat_id, m.get_notify_text(), parse_mode='HTML',
+                                        disable_notification=is_day_off)
         model_meeting_daily.update_meetings_daily(m.id_)
         model_root.insert_sent_notify(sent_message.chat.id, sent_message.message_id)
 
@@ -260,6 +260,7 @@ def check_meetings_daily():
 @skip_in_day_off
 @handle_exceptions
 def check_meetings_weekly():
+    is_day_off = functions_production.is_today_day_off()
     meetings = model_meeting_weekly.select_meetings_weekly_not_notified()
     meetings_to_notify = list(
         filter(
@@ -269,7 +270,8 @@ def check_meetings_weekly():
         )
     )
     for m in meetings_to_notify:
-        sent_message = bot.send_message(m.chat_id, m.get_notify_text(), parse_mode='HTML')
+        sent_message = bot.send_message(m.chat_id, m.get_notify_text(), parse_mode='HTML',
+                                        disable_notification=is_day_off)
         model_meeting_weekly.update_meetings_weekly(m.id_)
         model_root.insert_sent_notify(sent_message.chat.id, sent_message.message_id)
 
@@ -277,6 +279,7 @@ def check_meetings_weekly():
 @skip_in_day_off
 @handle_exceptions
 def check_meetings_monthly():
+    is_day_off = functions_production.is_today_day_off()
     meetings = model_meeting_monthly.select_meetings_monthly_not_notified()
     meetings_to_notify = list(
         filter(
@@ -286,7 +289,8 @@ def check_meetings_monthly():
         )
     )
     for m in meetings_to_notify:
-        sent_message = bot.send_message(m.chat_id, m.get_notify_text(), parse_mode='HTML')
+        sent_message = bot.send_message(m.chat_id, m.get_notify_text(), parse_mode='HTML',
+                                        disable_notification=is_day_off)
         model_meeting_monthly.update_meetings_monthly(m.id_)
         model_root.insert_sent_notify(sent_message.chat.id, sent_message.message_id)
 
@@ -294,6 +298,7 @@ def check_meetings_monthly():
 @skip_in_day_off
 @handle_exceptions
 def check_meetings_weekly_double():
+    is_day_off = functions_production.is_today_day_off()
     meetings = model_meeting_weekly_double.select_meetings_weekly_double_not_notified()
     meetings_to_notify = list(
         filter(
@@ -304,7 +309,8 @@ def check_meetings_weekly_double():
         )
     )
     for m in meetings_to_notify:
-        sent_message = bot.send_message(m.chat_id, m.get_notify_text(), parse_mode='HTML')
+        sent_message = bot.send_message(m.chat_id, m.get_notify_text(), parse_mode='HTML',
+                                        disable_notification=is_day_off)
         model_meeting_weekly_double.update_meetings_weekly_double(m.id_)
         model_root.insert_sent_notify(sent_message.chat.id, sent_message.message_id)
 

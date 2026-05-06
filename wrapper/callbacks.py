@@ -5,27 +5,13 @@ from wrapper.functions import MeetingFunctions, AdminFunctions
 from telebot_calendar import Calendar, CallbackData, RUSSIAN_LANGUAGE
 
 calendar_meeting = Calendar(language=RUSSIAN_LANGUAGE)
-calendar_day_off = Calendar(language=RUSSIAN_LANGUAGE)
 callback_calendar_meeting = CallbackData('date_meeting', 'action', 'year', 'month', 'day')
-callback_calendar_day_off = CallbackData('date_day_off', 'action', 'year', 'month', 'day')
 
 
 class AdminCallbackHandlers:
     def __init__(self, admin_functions: AdminFunctions):
         self.admin_functions = admin_functions
         self.bot = admin_functions.bot
-
-    def day_off_date_callback_handler(self, call):
-        name, action, year, month, day = call.data.split(callback_calendar_day_off.sep)
-        date_ = calendar_day_off.calendar_query_handler(
-            bot=self.bot, call=call, name=name, action=action, year=year, month=month, day=day  # noqa
-        )
-        if action == 'DAY':
-            date_ = date_.date()
-            if date_ < datetime.date.today():
-                self.bot.send_message(call.message.chat.id, 'Нельзя указывать прошедшую дату 😐')
-                return
-            self.admin_functions.add_day_off_(call.message, date_.strftime('%Y-%m-%d'))
 
 
 class MeetingCallbackHandlers:

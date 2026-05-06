@@ -30,36 +30,24 @@ class FunctionsDict:
             5: {
                 'name': 'Файл логов',
                 'function': self.admin.logs
-            },
-            6: {
-                'name': 'Просмотр выходных',
-                'function': self.admin.show_day_off
-            },
-            7: {
-                'name': 'Добавить выходной',
-                'function': self.admin.add_day_off
-            },
-            8: {
-                'name': 'Удалить выходные',
-                'function': self.admin.delete_day_off
             }
         }
 
     def get_commands_production(self):
         return {
-            9: {
+            6: {
                 'name': 'Неделя',
                 'function': self.production.week
             },
-            10: {
+            7: {
                 'name': 'Месяц',
                 'function': self.production.month
             },
-            11: {
+            8: {
                 'name': 'Квартал',
                 'function': self.production.quarter
             },
-            12: {
+            9: {
                 'name': 'Год',
                 'function': self.production.year
             }

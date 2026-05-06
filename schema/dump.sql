@@ -84,10 +84,6 @@ CREATE TABLE IF NOT EXISTS meeting_monthly (
     is_notified    INTEGER DEFAULT (0)
 );
 
-CREATE TABLE day_off (
-    date TEXT NOT NULL
-);
-
 CREATE TABLE sent_notify (
     chat_id    TEXT NOT NULL,
     message_id TEXT NOT NULL
