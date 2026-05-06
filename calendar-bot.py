@@ -66,6 +66,7 @@ def start(message):
 
 
 @bot.message_handler(commands=['meeting'])
+@bot.message_handler(func=lambda message: message.chat.type == 'private' and str(message.text) == 'Встречи 🗣️')
 def meeting(message):
     markup = InlineKeyboardMarkup()
     markup.row_width = 6
@@ -75,12 +76,8 @@ def meeting(message):
     bot.send_message(message.chat.id, 'Выберите действие', reply_markup=markup)
 
 
-@bot.message_handler(func=lambda message: message.chat.type == 'private' and str(message.text) == 'Встречи 🗣️')
-def meeting_menu_button_handler(message):
-    meeting(message)
-
-
 @bot.message_handler(commands=['admin'])
+@bot.message_handler(func=lambda message: message.chat.type == 'private' and str(message.text) == 'Управление ⚙️')
 def admin(message):
     if not model_root.is_super_user(message.from_user.username):
         bot.send_message(message.chat.id, 'Отказано 🔒')
@@ -93,12 +90,9 @@ def admin(message):
     bot.send_message(message.chat.id, 'Выберите действие', reply_markup=markup)
 
 
-@bot.message_handler(func=lambda message: message.chat.type == 'private' and str(message.text) == 'Управление ⚙️')
-def admin_menu_button_handler(message):
-    admin(message)
-
-
 @bot.message_handler(commands=['production'])
+@bot.message_handler(func=lambda message: message.chat.type == 'private' and
+                                          str(message.text) == 'Производственный календарь 📅')
 def production(message):
     markup = InlineKeyboardMarkup()
     markup.row_width = 6
@@ -106,12 +100,6 @@ def production(message):
         markup.add(InlineKeyboardButton(text=value['name'], callback_data=f'command_{key}'))
     functions.add_cancel_button(markup)
     bot.send_message(message.chat.id, 'Выберите текущий период', reply_markup=markup)
-
-
-@bot.message_handler(func=lambda message: message.chat.type == 'private' and
-                                          str(message.text) == 'Производственный календарь 📅')
-def production_menu_button_handler(message):
-    production(message)
 
 
 # endregion
