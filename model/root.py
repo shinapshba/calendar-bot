@@ -5,9 +5,6 @@ from dto import Chat, SentNotify
 MEETING_BASE_COLS = 'chat_id, chat_title, username, place, description, notify_lag_min'
 
 __DATABASE_FILE = 'database.db'
-__SELECT_DAY_OFF = 'SELECT date FROM day_off'
-__INSERT_DAY_OFF = 'INSERT INTO day_off VALUES (?)'
-__DELETE_DAY_OFF = 'DELETE FROM day_off'
 __SELECT_TOKEN = 'SELECT data FROM token'
 __SELECT_PRODUCTION_CALENDAR_TOKEN = 'SELECT data FROM production_calendar_token'
 __IS_SUPER_USER = 'SELECT COUNT(*) FROM super_user WHERE username=?'
@@ -76,18 +73,6 @@ def upsert_chat(chat_id, username, title):
 def select_all_chats():
     return fetchall(__SELECT_ALL_CHATS, lambda cursor, row: Chat(row[0], row[1], row[2]))
 
-def is_day_off(day_date: str):
-    days = select_day_off()
-    return bool(days) and day_date in days
-
-def select_day_off():
-    return fetchall(__SELECT_DAY_OFF, lambda cursor, row: row[0])
-
-def insert_day_off(day_date: str):
-    execute(__INSERT_DAY_OFF, (day_date,))
-
-def delete_day_off():
-    execute(__DELETE_DAY_OFF)
 
 def select_sent_notify():
     return fetchall(__SELECT_SENT_NOTIFY, lambda cursor, row: SentNotify(row[0], row[1]))

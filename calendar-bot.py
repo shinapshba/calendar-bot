@@ -194,16 +194,6 @@ def handle_exceptions(func):
     return wrapper
 
 
-def skip_in_day_off(func):
-    def wrapper(*args, **kwargs):
-        if model_root.is_day_off(utils.get_current_date()):
-            return None
-        return func(*args, **kwargs)
-
-    return wrapper
-
-
-@skip_in_day_off
 @handle_exceptions
 def check_meetings_by_notification_day():
     is_day_off = functions_production.is_today_day_off()
@@ -214,7 +204,6 @@ def check_meetings_by_notification_day():
         model_meeting.update_meeting_notify_flag_day(m.id_)
 
 
-@skip_in_day_off
 @handle_exceptions
 def check_meetings_by_notification_min():
     is_day_off = functions_production.is_today_day_off()
@@ -229,7 +218,6 @@ def check_meetings_by_notification_min():
         model_root.insert_sent_notify(sent_message.chat.id, sent_message.message_id)
 
 
-@skip_in_day_off
 @handle_exceptions
 def check_meetings_daily():
     is_day_off = functions_production.is_today_day_off()
@@ -245,7 +233,6 @@ def check_meetings_daily():
         model_root.insert_sent_notify(sent_message.chat.id, sent_message.message_id)
 
 
-@skip_in_day_off
 @handle_exceptions
 def check_meetings_weekly():
     is_day_off = functions_production.is_today_day_off()
@@ -264,7 +251,6 @@ def check_meetings_weekly():
         model_root.insert_sent_notify(sent_message.chat.id, sent_message.message_id)
 
 
-@skip_in_day_off
 @handle_exceptions
 def check_meetings_monthly():
     is_day_off = functions_production.is_today_day_off()
@@ -283,7 +269,6 @@ def check_meetings_monthly():
         model_root.insert_sent_notify(sent_message.chat.id, sent_message.message_id)
 
 
-@skip_in_day_off
 @handle_exceptions
 def check_meetings_weekly_double():
     is_day_off = functions_production.is_today_day_off()

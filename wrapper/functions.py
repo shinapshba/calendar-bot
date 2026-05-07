@@ -20,8 +20,6 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeybo
 from telebot_calendar import Calendar, RUSSIAN_LANGUAGE
 
 calendar_meeting = Calendar(language=RUSSIAN_LANGUAGE)
-calendar_day_off = Calendar(language=RUSSIAN_LANGUAGE)
-
 
 # region utils
 menu = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True, selective=True)
