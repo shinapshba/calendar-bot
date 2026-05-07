@@ -24,10 +24,9 @@ from telebot.types import BotCommand, BotCommandScopeDefault, BotCommandScopeAll
 
 class BotExceptionHandler(telebot.ExceptionHandler):
     def handle(self, exception):
-        stack_trace = str(traceback.format_exc()).strip('\n')
-        print(f'\n{utils.get_current_datetime()}')
+        print(f'\n{utils.get_current_datetime()} Error in bot')
         print('--- Stack trace start ---')
-        print(stack_trace)
+        print(str(traceback.format_exc()).strip('\n'))
         print('--- Stack trace end ---')
         return True
 
@@ -190,8 +189,11 @@ def handle_exceptions(func):
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except Exception as ex:
-            print(f'Error in scheduler: {str(ex)}')
+        except:  # noqa
+            print(f'\n{utils.get_current_datetime()} Error in scheduler')
+            print('--- Stack trace start ---')
+            print(str(traceback.format_exc()).strip('\n'))
+            print('--- Stack trace end ---')
             return None
 
     return wrapper

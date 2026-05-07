@@ -86,7 +86,7 @@ def delete_sent_notify():
     execute(__DELETE_SENT_NOTIFY)
 
 def select_is_today_day_off():
-    return bool(fetchone(__SELECT_IS_TODAY_DAY_OFF, lambda cursor, row: row[0]))
+    return bool(fetchone(__SELECT_IS_TODAY_DAY_OFF))
 
 def update_is_today_day_off(is_day_off: bool):
     execute(__UPDATE_IS_TODAY_DAY_OFF, (int(is_day_off),))
