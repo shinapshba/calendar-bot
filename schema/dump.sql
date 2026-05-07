@@ -89,5 +89,9 @@ CREATE TABLE sent_notify (
     message_id TEXT NOT NULL
 );
 
+CREATE TABLE is_today_day_off (
+    value INTEGER NOT NULL DEFAULT (0)
+);
+
 COMMIT TRANSACTION;
 PRAGMA foreign_keys = on;

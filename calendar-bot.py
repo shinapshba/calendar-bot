@@ -6,6 +6,8 @@ import time
 import traceback
 import os
 
+from integration.dto import Day
+from integration.production import ProductionCalendar
 from wrapper import functions, callbacks
 from functions_dict import FunctionsDict
 from model import root as model_root
@@ -45,9 +47,10 @@ bot.delete_my_commands()
 bot.set_my_commands(commands=commands_default, scope=BotCommandScopeDefault())
 bot.set_my_commands(commands=commands_default + commands_admin, scope=BotCommandScopeAllPrivateChats())
 
+production_calendar = ProductionCalendar(model_root.select_production_calendar_token())
 functions_admin = functions.AdminFunctions(bot)
 functions_meeting = functions.MeetingFunctions(bot)
-functions_production = functions.ProductionFunctions(bot, model_root.select_production_calendar_token())
+functions_production = functions.ProductionFunctions(bot, production_calendar)
 functions_dict = FunctionsDict(bot, functions_admin, functions_meeting, functions_production)
 
 callbacks_meeting = callbacks.MeetingCallbackHandlers(functions_meeting)
@@ -196,7 +199,7 @@ def handle_exceptions(func):
 
 @handle_exceptions
 def check_meetings_by_notification_day():
-    is_day_off = functions_production.is_today_day_off()
+    is_day_off = model_root.select_is_today_day_off()
     meetings = model_meeting.select_meetings_for_notify_by_day()
     meetings_to_notify = list(filter(lambda m_: utils.is_date_tomorrow(m_.date_time), meetings))
     for m in meetings_to_notify:
@@ -206,7 +209,7 @@ def check_meetings_by_notification_day():
 
 @handle_exceptions
 def check_meetings_by_notification_min():
-    is_day_off = functions_production.is_today_day_off()
+    is_day_off = model_root.select_is_today_day_off()
     meetings = model_meeting.select_meetings_for_notify_by_min()
     meetings_to_notify = list(
         filter(lambda m_: utils.is_datetime_delta_passed_minutes(m_.date_time, int(m_.notify_lag_min)), meetings)
@@ -220,7 +223,7 @@ def check_meetings_by_notification_min():
 
 @handle_exceptions
 def check_meetings_daily():
-    is_day_off = functions_production.is_today_day_off()
+    is_day_off = model_root.select_is_today_day_off()
     meetings = model_meeting_daily.select_meetings_daily_not_notified()
     meetings_to_notify = list(
         filter(lambda m_: utils.is_current_day_working() and
@@ -235,7 +238,7 @@ def check_meetings_daily():
 
 @handle_exceptions
 def check_meetings_weekly():
-    is_day_off = functions_production.is_today_day_off()
+    is_day_off = model_root.select_is_today_day_off()
     meetings = model_meeting_weekly.select_meetings_weekly_not_notified()
     meetings_to_notify = list(
         filter(
@@ -253,7 +256,7 @@ def check_meetings_weekly():
 
 @handle_exceptions
 def check_meetings_monthly():
-    is_day_off = functions_production.is_today_day_off()
+    is_day_off = model_root.select_is_today_day_off()
     meetings = model_meeting_monthly.select_meetings_monthly_not_notified()
     meetings_to_notify = list(
         filter(
@@ -271,7 +274,7 @@ def check_meetings_monthly():
 
 @handle_exceptions
 def check_meetings_weekly_double():
-    is_day_off = functions_production.is_today_day_off()
+    is_day_off = model_root.select_is_today_day_off()
     meetings = model_meeting_weekly_double.select_meetings_weekly_double_not_notified()
     meetings_to_notify = list(
         filter(
@@ -308,6 +311,17 @@ def delete_sent_notifies():
     model_root.delete_sent_notify()
 
 
+@handle_exceptions
+def set_is_today_day_off():
+    try:
+        day = Day.from_dict(production_calendar.get_current_day().json()['days'][0])
+        is_day_off = day.work_hours == 0
+    except Exception as ex:  # noqa
+        print(ex)
+        is_day_off = False
+    model_root.update_is_today_day_off(is_day_off)
+
+
 def run_schedule():
     while True:
         schedule.run_pending()
@@ -316,6 +330,7 @@ def run_schedule():
 
 schedule.every().day.at('17:00').do(check_meetings_by_notification_day)
 schedule.every().day.at('00:00').do(backup_meetings_daily)
+schedule.every().day.at('00:30').do(set_is_today_day_off)
 schedule.every().day.at('01:00').do(delete_sent_notifies)
 schedule.every(1).minute.do(check_meetings_by_notification_min)
 schedule.every(1).minute.do(check_meetings_daily)

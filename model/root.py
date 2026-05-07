@@ -12,6 +12,8 @@ __SELECT_ALL_CHATS = 'SELECT * FROM chat'
 __SELECT_SENT_NOTIFY = 'SELECT * FROM sent_notify'
 __INSERT_SENT_NOTIFY = 'INSERT INTO sent_notify VALUES(?, ?)'
 __DELETE_SENT_NOTIFY = 'DELETE FROM sent_notify'
+__SELECT_IS_TODAY_DAY_OFF = 'SELECT * FROM is_today_day_off'
+__UPDATE_IS_TODAY_DAY_OFF = 'UPDATE is_today_day_off SET value = ?'
 __UPSERT_CHAT = '''INSERT INTO chat(chat_id, username, title) VALUES(?, ?, ?) ON CONFLICT(chat_id) DO UPDATE SET 
 username=excluded.username, title=excluded.title'''
 
@@ -82,3 +84,9 @@ def insert_sent_notify(chat_id, message_id):
 
 def delete_sent_notify():
     execute(__DELETE_SENT_NOTIFY)
+
+def select_is_today_day_off():
+    return bool(fetchone(__SELECT_IS_TODAY_DAY_OFF, lambda cursor, row: row[0]))
+
+def update_is_today_day_off(is_day_off: bool):
+    execute(__UPDATE_IS_TODAY_DAY_OFF, (int(is_day_off),))
