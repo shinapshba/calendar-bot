@@ -27,11 +27,6 @@ menu.row('Встречи 🗣️', 'Управление ⚙️')
 menu.row('Производственный календарь 📅')
 
 
-def raise_error(bot, chat_id, text):
-    bot.send_message(chat_id, text)
-    raise Exception(text)
-
-
 def add_cancel_button(markup):
     markup.row(InlineKeyboardButton(text='Отмена', callback_data='cancel'))
 
@@ -347,7 +342,8 @@ class MeetingFunctions:
     def request_day_of_month(self, message, **kwargs):
         text = message.text.strip()
         if re.fullmatch('^([1-9]|[12][0-9]|3[01])$', text) is None:
-            raise_error(self.bot, message.chat.id, 'Нужно было ввести число от 1 до 31 😐')
+            self.bot.send_message(message.chat.id, 'Нужно было ввести число от 1 до 31 😐', reply_markup=menu)
+            return
         kwargs['day_of_month'] = text
         self.bot.send_message(message.chat.id, 'Время? (HH:mm)')
         self.bot.register_next_step_handler_by_chat_id(message.chat.id, self.request_time_handler, **kwargs)
@@ -358,17 +354,19 @@ class MeetingFunctions:
             time_ = text
         elif str.isdigit(text):
             if int(text) > 23:
-                raise_error(self.bot, message.chat.id, 'Час должен быть в периоде [0, 23]')
+                self.bot.send_message(message.chat.id, 'Час должен быть в периоде [0, 23]', reply_markup=menu)
+                return
             time_ = f'{text}:00'
         else:
-            raise_error(self.bot, message.chat.id, 'Неверный формат времени. '
-                                                   'Поддерживаемые форматы:\n* <часы>\n* <часы>:<минуты>')
+            self.bot.send_message(message.chat.id, 'Неверный формат времени. Поддерживаемые форматы:'
+                                                   '\n* <часы>\n* <часы>:<минуты>', reply_markup=menu)
             return
         if 'schedule' not in kwargs:
             if datetime.datetime.combine(
                     date=kwargs['date'], time=datetime.datetime.strptime(time_, '%H:%M').time()
             ) < datetime.datetime.now():
-                raise_error(self.bot, message.chat.id, 'Нельзя запланировать на прошедшее время 😐')
+                self.bot.send_message(message.chat.id, 'Нельзя запланировать на прошедшее время 😐', reply_markup=menu)
+                return
         kwargs['time'] = time_
         self.bot.send_message(message.chat.id, text=f'Место?')
         self.bot.register_next_step_handler_by_chat_id(message.chat.id, self.__request_url_handler, **kwargs)
@@ -385,7 +383,9 @@ class MeetingFunctions:
 
     def __request_min_for_notify(self, message, **kwargs):
         if not str(message.text).isdigit() or int(message.text) == 0:
-            raise_error(self.bot, message.chat.id, 'Нужно было ввести целое положительное чисто, больше 0')
+            self.bot.send_message(message.chat.id, 'Нужно было ввести целое положительное чисто, больше 0',
+                                  reply_markup=menu)
+            return
         kwargs['notify_lag_min'] = message.text
         self.__create_meeting(message, **kwargs)
 
