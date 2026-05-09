@@ -147,7 +147,7 @@ class AdminFunctions:
             bot.send_message(chat_id, 'Файл логов пуст', reply_markup=menu)
             return
         with open(AdminFunctions.LOG_FILE, 'rb') as log_file:
-            bot.send_document(chat_id, log_file, reply_markup=menu)
+            bot.send_document(chat_id, log_file, visible_file_name='logs.txt', reply_markup=menu)
 
     def logs(self, call):
         thread = threading.Thread(target=AdminFunctions.__send_logs_file_async,
