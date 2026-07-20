@@ -33,7 +33,7 @@ class FunctionsDict:
             },
             6: {
                 'name': 'Удалить оповещения',
-                'function': None
+                'function': self.admin.delete_notifies
             }
         }
 
