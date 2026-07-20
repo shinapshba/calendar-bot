@@ -16,6 +16,7 @@ class AdminCallbackHandlers:
     def delete_notifies(self, call, prefix):
         chat_id = call.data.replace(prefix, '')
         self.admin_functions.delete_notifies_(call, chat_id)
+        self.bot.delete_message(call.message.chat.id, call.message.message_id)
 
 
 class MeetingCallbackHandlers:
