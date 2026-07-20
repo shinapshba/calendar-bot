@@ -177,6 +177,11 @@ def meeting_week_period_callback_handler(call):
     callbacks_meeting.meeting_week_period_callback_handler(call)
 
 
+@bot.callback_query_handler(func=lambda call: call.data.startswith('delete_notifies_chat_id'))
+def delete_notifies_by_chat_id_callback_handler(call):
+    callbacks_admin.delete_notifies(call, 'delete_notifies_chat_id')
+
+
 @bot.callback_query_handler(func=lambda call: call.data.startswith('cancel'))
 def cancel_callback_handler(call):
     bot.delete_message(call.message.chat.id, call.message.message_id)
