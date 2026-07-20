@@ -13,6 +13,10 @@ class AdminCallbackHandlers:
         self.admin_functions = admin_functions
         self.bot = admin_functions.bot
 
+    def delete_notifies(self, call, prefix):
+        chat_id = call.data.replace(prefix, '')
+        self.admin_functions.delete_notifies_(call, chat_id)
+
 
 class MeetingCallbackHandlers:
     def __init__(self, meeting_functions: MeetingFunctions):

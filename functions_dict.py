@@ -30,24 +30,28 @@ class FunctionsDict:
             5: {
                 'name': 'Файл логов',
                 'function': self.admin.logs
+            },
+            6: {
+                'name': 'Удалить оповещения',
+                'function': None
             }
         }
 
     def get_commands_production(self):
         return {
-            6: {
+            7: {
                 'name': 'Неделя',
                 'function': self.production.week
             },
-            7: {
+            8: {
                 'name': 'Месяц',
                 'function': self.production.month
             },
-            8: {
+            9: {
                 'name': 'Квартал',
                 'function': self.production.quarter
             },
-            9: {
+            10: {
                 'name': 'Год',
                 'function': self.production.year
             }

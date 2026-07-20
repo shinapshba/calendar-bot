@@ -10,6 +10,7 @@ __SELECT_PRODUCTION_CALENDAR_TOKEN = 'SELECT data FROM production_calendar_token
 __IS_SUPER_USER = 'SELECT COUNT(*) FROM super_user WHERE username=?'
 __SELECT_ALL_CHATS = 'SELECT * FROM chat'
 __SELECT_SENT_NOTIFY = 'SELECT * FROM sent_notify'
+__SELECT_SENT_NOTIFY_BY_CHAT_ID = 'SELECT * FROM sent_notify WHERE chat_id = ?'
 __INSERT_SENT_NOTIFY = 'INSERT INTO sent_notify VALUES(?, ?)'
 __DELETE_SENT_NOTIFY = 'DELETE FROM sent_notify'
 __DELETE_SENT_NOTIFY_BY_CHAT = 'DELETE FROM sent_notify WHERE chat_id = ?'
@@ -79,7 +80,10 @@ def select_all_chats():
 
 
 def select_sent_notify():
-    return fetchall(__SELECT_SENT_NOTIFY, lambda cursor, row: SentNotify(row[0], row[1]))
+    return fetchall(__SELECT_SENT_NOTIFY, SentNotify.row_factory())
+
+def select_sent_notify_by_chat_id(chat_id):
+    return fetchall(__SELECT_SENT_NOTIFY_BY_CHAT_ID, SentNotify.row_factory(), (chat_id,))
 
 def insert_sent_notify(chat_id, message_id):
     execute(__INSERT_SENT_NOTIFY, (chat_id, message_id,))

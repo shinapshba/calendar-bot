@@ -138,6 +138,24 @@ class AdminFunctions:
 
     LOG_FILE = './nohup.out'
 
+    def delete_notifies(self, call):
+        reply_by_common_chats_markup(self.bot, call, 'delete_notifies_chat_id')
+
+    def delete_notifies_(self, call, chat_id):
+        errors = []
+        sent_notifies = m_root.select_sent_notify_by_chat_id(chat_id)
+        for notify in sent_notifies:
+            try:
+                self.bot.delete_message(notify.chat_id, notify.message_id)
+                m_root.delete_sent_notify_by_chat_id_and_message_id(notify.chat_id, notify.message_id)
+            except Exception as ex:
+                errors.append(str(ex))
+        if len(errors) != 0:
+            text = '\n\n'.join(errors)
+            self.bot.send_message(call.message.chat.id, f'Ошибки:\n{text}', reply_markup=menu)
+        else:
+            self.bot.send_message(call.message.chat.id, 'Удалил ✅', reply_markup=menu)
+
     @staticmethod
     def __send_logs_file_async(bot, chat_id):
         if not os.path.exists(AdminFunctions.LOG_FILE):

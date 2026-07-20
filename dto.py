@@ -248,3 +248,7 @@ class SentNotify:
     def __init__(self, chat_id, message_id):
         self.chat_id = chat_id
         self.message_id = message_id
+
+    @staticmethod
+    def row_factory():
+        return lambda cursor, row: SentNotify(row[0], row[1])
