@@ -308,9 +308,9 @@ def delete_sent_notifies():
         for notify in sent_notifies:
             try:
                 bot.delete_message(notify.chat_id, notify.message_id)
+                model_root.delete_sent_notify_by_chat_id_and_message_id(notify.chat_id, notify.message_id)
             except:  # noqa
                 pass
-    model_root.delete_sent_notify()
 
 
 @handle_exceptions
