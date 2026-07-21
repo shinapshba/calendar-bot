@@ -54,10 +54,10 @@ class Meeting(MeetingBase):
                 f'Directed by @{kwargs["username"]}')
 
     def get_view_with_chat_title(self):
-        return f'{self.chat_title}. Одиночная, {self.date_time}'
+        return f'{self.chat_title}. {self.date_time}: {self.description}'
 
     def get_view_short(self):
-        return f'Одиночная, {self.date_time}'
+        return f'{self.date_time}: {self.description}'
 
 
 class MeetingDaily(MeetingBase):
@@ -88,10 +88,10 @@ class MeetingDaily(MeetingBase):
                 f'Directed by @{kwargs["username"]}')
 
     def get_view_with_chat_title(self):
-        return f'{self.chat_title}. Ежедневная, в {self.time_}'
+        return f'{self.chat_title}. Ежедневно, в {self.time_}: {self.description}'
 
     def get_view_short(self):
-        return f'Ежедневная, в {self.time_}'
+        return f'Ежедневно, в {self.time_}: {self.description}'
 
 
 class MeetingWeekly(MeetingBase):
@@ -138,10 +138,10 @@ class MeetingWeekly(MeetingBase):
                 f'Directed by @{kwargs["username"]}')
 
     def get_view_with_chat_title(self):
-        return f'{self.chat_title}. {self.get_day_string()}, в {self.time_}'
+        return f'{self.chat_title}. {self.get_day_string()}, в {self.time_}: {self.description}'
 
     def get_view_short(self):
-        return f'{self.get_day_string()}, в {self.time_}'
+        return f'{self.get_day_string()}, в {self.time_}: {self.description}'
 
 
 class MeetingWeeklyDouble(MeetingBase):
@@ -201,10 +201,10 @@ class MeetingWeeklyDouble(MeetingBase):
                 f'Directed by @{kwargs["username"]}')
 
     def get_view_with_chat_title(self):
-        return f'{self.chat_title}. {self.get_day_string()}, в {self.time_}'
+        return f'{self.chat_title}. {self.get_day_string()}, в {self.time_}: {self.description}'
 
     def get_view_short(self):
-        return f'{self.get_day_string()}, в {self.time_}'
+        return f'{self.get_day_string()}, в {self.time_}: {self.description}'
 
 
 class MeetingMonthly(MeetingBase):
@@ -238,10 +238,10 @@ class MeetingMonthly(MeetingBase):
                 f'Directed by @{kwargs["username"]}')
 
     def get_view_with_chat_title(self):
-        return f'{self.chat_title}. Каждое {self.day_of_month}ое число'
+        return f'{self.chat_title}. Каждое {self.day_of_month}ое число: {self.description}'
 
     def get_view_short(self):
-        return f'Каждое {self.day_of_month}ое число'
+        return f'Каждое {self.day_of_month}ое число: {self.description}'
 
 
 class SentNotify:

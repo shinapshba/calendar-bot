@@ -227,20 +227,16 @@ class MeetingFunctions:
             return
 
         meeting_views = []
+        meetings_lists = [future_meetings, meetings_daily, meetings_weekly, meetings_monthly, meetings_weekly_double]
         if call.message.chat.type == 'private':
-            meeting_views += list(map(lambda fm: f' * {fm.get_view_with_chat_title()}', future_meetings))
-            meeting_views += list(map(lambda md: f' * {md.get_view_with_chat_title()}', meetings_daily))
-            meeting_views += list(map(lambda mw: f' * {mw.get_view_with_chat_title()}', meetings_weekly))
-            meeting_views += list(map(lambda mm: f' * {mm.get_view_with_chat_title()}', meetings_monthly))
-            meeting_views += list(map(lambda mwd: f' * {mwd.get_view_with_chat_title()}', meetings_weekly_double))
+            for meeting_list in meetings_lists:
+                meeting_views += list(map(lambda m: f'{m.get_view_with_chat_title()}', meeting_list))
         else:
-            meeting_views += list(map(lambda fm: f' * {fm.get_view_short()}', future_meetings))
-            meeting_views += list(map(lambda md: f' * {md.get_view_short()}', meetings_daily))
-            meeting_views += list(map(lambda mw: f' * {mw.get_view_short()}', meetings_weekly))
-            meeting_views += list(map(lambda mm: f' * {mm.get_view_short()}', meetings_monthly))
-            meeting_views += list(map(lambda mwd: f' * {mwd.get_view_short()}', meetings_weekly_double))
+            for meeting_list in meetings_lists:
+                meeting_views += list(map(lambda m: f'{m.get_view_short()}', meeting_list))
         meeting_views.sort()
-        self.bot.send_message(call.message.chat.id, 'Встречи:\n' + '\n'.join(meeting_views), reply_markup=menu)
+        text = '\n |\n'.join(meeting_views)
+        self.bot.send_message(call.message.chat.id, text, reply_markup=menu)
 
     def delete(self, call):
         if call.message.chat.type != 'private':
