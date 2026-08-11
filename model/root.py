@@ -5,6 +5,7 @@ from dto import Chat, SentNotify
 MEETING_BASE_COLS = 'chat_id, chat_title, username, place, description, notify_lag_min'
 
 __DATABASE_FILE = 'database.db'
+__SELECT_PROXY = 'SELECT data FROM proxy'
 __SELECT_TOKEN = 'SELECT data FROM token'
 __SELECT_PRODUCTION_CALENDAR_TOKEN = 'SELECT data FROM production_calendar_token'
 __IS_SUPER_USER = 'SELECT COUNT(*) FROM super_user WHERE username=?'
@@ -102,3 +103,6 @@ def select_is_today_day_off():
 
 def update_is_today_day_off(is_day_off: bool):
     execute(__UPDATE_IS_TODAY_DAY_OFF, (int(is_day_off),))
+
+def select_proxy():
+    return fetchone(__SELECT_PROXY)

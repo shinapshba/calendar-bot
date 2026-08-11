@@ -18,6 +18,7 @@ from model import meeting_monthly as model_meeting_monthly
 from model import meeting_weekly_double as model_meeting_weekly_double
 
 from threading import Thread
+from telebot import apihelper
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from telebot.types import BotCommand, BotCommandScopeDefault, BotCommandScopeAllPrivateChats
 
@@ -41,6 +42,7 @@ commands_admin = [
     BotCommand('/admin', 'Управление')
 ]
 
+apihelper.API_URL = model_root.select_proxy() + '{0}/{1}'
 bot = telebot.TeleBot(model_root.select_token(), exception_handler=BotExceptionHandler())
 bot.delete_my_commands()
 bot.set_my_commands(commands=commands_default, scope=BotCommandScopeDefault())
