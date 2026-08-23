@@ -98,12 +98,7 @@ def admin(message):
 @bot.message_handler(func=lambda message: message.chat.type == 'private' and
                                           str(message.text) == 'Производственный календарь 📅')
 def production(message):
-    markup = InlineKeyboardMarkup()
-    markup.row_width = 6
-    for key, value in COMMANDS_PRODUCTION.items():
-        markup.add(InlineKeyboardButton(text=value['name'], callback_data=f'command_{key}'))
-    functions.add_cancel_button(markup)
-    bot.send_message(message.chat.id, 'Выберите текущий период', reply_markup=markup)
+    bot.send_message(message.chat.id, 'Временно не поддерживается ⏱️', reply_markup=functions.menu)
 
 
 # endregion
