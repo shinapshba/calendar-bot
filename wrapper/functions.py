@@ -12,8 +12,6 @@ from model import meeting_monthly as m_meeting_monthly
 from model import meeting_weekly as m_meeting_weekly
 from model import meeting_weekly_double as m_meeting_weekly_double
 from dto import Meeting, MeetingDaily, MeetingWeekly, MeetingWeeklyDouble, MeetingMonthly
-from integration.dto import Week, Month, Quarter, Year
-from integration import excel
 
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup
 from telebot_calendar import Calendar, RUSSIAN_LANGUAGE
@@ -457,52 +455,3 @@ class MeetingFunctions:
                                   parse_mode='HTML')
         if message.chat.type == 'private':
             self.bot.send_message(message.chat.id, text=f'Запланировал ✅', reply_markup=menu)
-
-
-class ProductionFunctions:
-    def __init__(self, bot, production_calendar):
-        self.production_calendar = production_calendar
-        self.bot = bot
-
-    def _safe_send(self, chat_id, file_name):
-        try:
-            with open(file_name, 'rb') as file:
-                self.bot.send_document(chat_id, file, visible_file_name='Инфо.xlsx', reply_markup=menu)
-        finally:
-            if os.path.exists(file_name):
-                os.remove(file_name)
-
-    def _handle_response(self, call, response):
-        if response.status_code != 200:
-            text = 'Ошибка от ресурса https://production-calendar.ru'
-            self.bot.send_message(call.message.chat.id, text, reply_markup=menu)
-            self.bot.delete_message(call.message.chat.id, call.message.message_id)
-            raise Exception(f'Response from {response.url}: {response.text}')
-
-    def week(self, call):
-        response = self.production_calendar.get_current_week()
-        self._handle_response(call, response)
-        week = Week.from_dict(response.json())
-        file_name = excel.create_file_week(week)
-        self._safe_send(call.message.chat.id, file_name)
-
-    def month(self, call):
-        response = self.production_calendar.get_current_month()
-        self._handle_response(call, response)
-        month = Month.from_dict(response.json())
-        file_name = excel.create_file_month(month)
-        self._safe_send(call.message.chat.id, file_name)
-
-    def quarter(self, call):
-        response = self.production_calendar.get_current_quarter()
-        self._handle_response(call, response)
-        quarter = Quarter.from_dict(response.json())
-        file_name = excel.create_file_quarter(quarter)
-        self._safe_send(call.message.chat.id, file_name)
-
-    def year(self, call):
-        response = self.production_calendar.get_current_year()
-        self._handle_response(call, response)
-        year = Year.from_dict(response.json())
-        file_name = excel.create_file_year(year)
-        self._safe_send(call.message.chat.id, file_name)

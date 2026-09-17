@@ -1,9 +1,8 @@
 class FunctionsDict:
-    def __init__(self, bot, admin, meeting, production):
+    def __init__(self, bot, admin, meeting):
         self.bot = bot
         self.admin = admin
         self.meeting = meeting
-        self.production = production
 
     def get_commands_meeting(self):
         return {
@@ -34,25 +33,5 @@ class FunctionsDict:
             6: {
                 'name': 'Удалить оповещения',
                 'function': self.admin.delete_notifies
-            }
-        }
-
-    def get_commands_production(self):
-        return {
-            7: {
-                'name': 'Неделя',
-                'function': self.production.week
-            },
-            8: {
-                'name': 'Месяц',
-                'function': self.production.month
-            },
-            9: {
-                'name': 'Квартал',
-                'function': self.production.quarter
-            },
-            10: {
-                'name': 'Год',
-                'function': self.production.year
             }
         }

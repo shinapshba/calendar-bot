@@ -6,8 +6,6 @@ import time
 import traceback
 import os
 
-from integration.dto import Day
-from integration.production import ProductionCalendar
 from wrapper import functions, callbacks
 from functions_dict import FunctionsDict
 from model import root as model_root
@@ -48,19 +46,15 @@ bot.delete_my_commands()
 bot.set_my_commands(commands=commands_default, scope=BotCommandScopeDefault())
 bot.set_my_commands(commands=commands_default + commands_admin, scope=BotCommandScopeAllPrivateChats())
 
-production_calendar = ProductionCalendar(model_root.select_production_calendar_token())
 functions_admin = functions.AdminFunctions(bot)
 functions_meeting = functions.MeetingFunctions(bot)
-functions_production = functions.ProductionFunctions(bot, production_calendar)
-functions_dict = FunctionsDict(bot, functions_admin, functions_meeting, functions_production)
+functions_dict = FunctionsDict(bot, functions_admin, functions_meeting)
 
 callbacks_meeting = callbacks.MeetingCallbackHandlers(functions_meeting)
 callbacks_admin = callbacks.AdminCallbackHandlers(functions_admin)
 
 COMMANDS_MEETING = functions_dict.get_commands_meeting()
 COMMANDS_ADMIN = functions_dict.get_commands_admin()
-COMMANDS_PRODUCTION = functions_dict.get_commands_production()
-
 
 # region root commands
 @bot.message_handler(commands=['start'])
@@ -111,8 +105,6 @@ def command_callback_handler(call):
         COMMANDS_MEETING[command_id]['function'](call)  # noqa
     if command_id in COMMANDS_ADMIN:
         COMMANDS_ADMIN[command_id]['function'](call)  # noqa
-    if command_id in COMMANDS_PRODUCTION:
-        COMMANDS_PRODUCTION[command_id]['function'](call)  # noqa
     bot.delete_message(call.message.chat.id, call.message.message_id)
 
 
@@ -317,13 +309,7 @@ def delete_sent_notifies():
 
 @handle_exceptions
 def set_is_today_day_off():
-    try:
-        day = Day.from_dict(production_calendar.get_current_day().json()['days'][0])
-        is_day_off = day.work_hours == 0
-    except Exception as ex:  # noqa
-        print(ex)
-        is_day_off = False
-    model_root.update_is_today_day_off(is_day_off)
+    pass
 
 
 def run_schedule():
