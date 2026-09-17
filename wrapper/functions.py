@@ -107,9 +107,9 @@ def convert_message_to_html(message):
 def get_common_chats(bot, call):
     chat_ides = list(map(lambda c: c.chat_id, m_root.select_all_chats()))
     chats = []
-    for id in chat_ides:
+    for chat_id in chat_ides:
         try:
-            chats.append(bot.get_chat(i))
+            chats.append(bot.get_chat(chat_id))
         except Exception as ignore:  # noqa
             pass
     groups = list(filter(lambda c: c.type in ['group', 'supergroup'], chats))
