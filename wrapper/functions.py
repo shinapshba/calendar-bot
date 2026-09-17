@@ -106,7 +106,10 @@ def convert_message_to_html(message):
 
 def get_common_chats(bot, call):
     chat_ides = list(map(lambda c: c.chat_id, m_root.select_all_chats()))
-    chats = list(map(lambda i: bot.get_chat(i), chat_ides))
+    chats = []
+    for id in chat_ides:
+        try:
+            chats.append(bot.get_chat(i))
     groups = list(filter(lambda c: c.type in ['group', 'supergroup'], chats))
     return list(filter(lambda group: bot.get_chat_member(group.id, call.from_user.id).status in
                                      ['creator', 'administrator', 'member'], groups))
