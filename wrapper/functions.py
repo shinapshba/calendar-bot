@@ -110,6 +110,8 @@ def get_common_chats(bot, call):
     for id in chat_ides:
         try:
             chats.append(bot.get_chat(i))
+        except Exception as ignore:  # noqa
+            pass
     groups = list(filter(lambda c: c.type in ['group', 'supergroup'], chats))
     return list(filter(lambda group: bot.get_chat_member(group.id, call.from_user.id).status in
                                      ['creator', 'administrator', 'member'], groups))
