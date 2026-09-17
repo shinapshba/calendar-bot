@@ -180,9 +180,9 @@ class AdminFunctions:
 
     def show_users(self, call):
         chats = m_root.select_all_chats()
-        users = sorted(list(map(lambda c: c.to_string(), chats)))
+        users = list(map(lambda c: c.to_string(), chats))
         anon_users_count = users.count(None)
-        public_users = [str(u) for u in users if u is not None]
+        public_users = sorted([str(u) for u in users if u is not None])
         text = '\n'.join(public_users)
         if anon_users_count != 0:
             text += f'\n Анонимных пользователей - {anon_users_count}'
