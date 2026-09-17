@@ -8,6 +8,8 @@ class Chat:
         self.title = title
 
     def to_string(self):
+        if self.username is None and self.title is None:
+            return None
         if self.username is not None:
             return f'Пользователь @{self.username}'
         return f'Чат "{self.title}"'
