@@ -141,7 +141,7 @@ class AdminFunctions:
     def __init__(self, bot):
         self.bot = bot
 
-    LOG_FILE = './nohup.out'
+    LOG_FILE = './logs.txt'
 
     def delete_notifies(self, call):
         reply_by_common_chats_markup(self.bot, call, 'delete_notifies_chat_id')
