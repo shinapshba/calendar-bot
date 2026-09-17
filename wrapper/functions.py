@@ -185,7 +185,7 @@ class AdminFunctions:
         public_users = sorted([str(u) for u in users if u is not None])
         text = '\n'.join(public_users)
         if anon_users_count != 0:
-            text += f'\n Анонимных пользователей - {anon_users_count}'
+            text += f'\nАнонимных пользователей - {anon_users_count}'
         if len(text) == 0:
             self.bot.send_message(call.message.chat.id, 'Список пользователей пуст', reply_markup=menu)
             return
