@@ -4,6 +4,8 @@ import utils
 import html
 import os
 import threading
+import shutil
+import time
 
 from model import root as m_root
 from model import meeting as m_meeting
@@ -11,6 +13,10 @@ from model import meeting_daily as m_meeting_daily
 from model import meeting_monthly as m_meeting_monthly
 from model import meeting_weekly as m_meeting_weekly
 from model import meeting_weekly_double as m_meeting_weekly_double
+from production_calendar import production
+from production_calendar.production import ProductionCalendar
+from production_calendar import excel
+from production_calendar import dto as production_calendar_dto
 from dto import Meeting, MeetingDaily, MeetingWeekly, MeetingWeeklyDouble, MeetingMonthly
 
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup
@@ -133,6 +139,42 @@ def reply_by_common_chats_markup(bot, call, markup_prefix):
 
 
 # endregion
+
+
+class ProductionCalendarFunctions:
+    def __init__(self, bot, api_key):
+        self.bot = bot
+        self.production_calendar = ProductionCalendar(api_key)
+
+    def update_production_calendar_files(self, message):
+        self.bot.send_message(message.chat.id, f'Получаю обновления от {production.ROOT_HOST}. '
+                                               f'Это может занять какое-то время 🕐')
+        self.run_update_production_calendar_files()
+        self.bot.send_message(message.chat.id, 'Файлы производственного календаря обновлены ✅', reply_markup=menu)
+
+    def run_update_production_calendar_files(self):
+        if os.path.exists(excel.FILES_DIR):
+            shutil.rmtree(excel.FILES_DIR)
+        os.makedirs(excel.FILES_DIR)
+        response_week = self.production_calendar.get_current_week()
+        week = production_calendar_dto.Week.from_dict(response_week.json())
+        excel.create_file_week(week)
+        time.sleep(1)
+
+        response_month = self.production_calendar.get_current_month()
+        month = production_calendar_dto.Month.from_dict(response_month.json())
+        excel.create_file_month(month)
+        time.sleep(1)
+
+        response_quarter = self.production_calendar.get_current_quarter()
+        quarter = production_calendar_dto.Quarter.from_dict(response_quarter.json())
+        excel.create_file_quarter(quarter)
+        time.sleep(1)
+
+        response_year = self.production_calendar.get_current_year()
+        year = production_calendar_dto.Year.from_dict(response_year.json())
+        excel.create_file_year(year)
+        time.sleep(1)
 
 
 class AdminFunctions:

@@ -14,6 +14,9 @@ from model import meeting_daily as model_meeting_daily
 from model import meeting_weekly as model_meeting_weekly
 from model import meeting_monthly as model_meeting_monthly
 from model import meeting_weekly_double as model_meeting_weekly_double
+from wrapper.functions import ProductionCalendarFunctions, MeetingFunctions, AdminFunctions
+from production_calendar import excel as p_excel
+from production_calendar import dto as p_dto
 
 from threading import Thread
 from telebot import apihelper
@@ -46,8 +49,9 @@ bot.delete_my_commands()
 bot.set_my_commands(commands=commands_default, scope=BotCommandScopeDefault())
 bot.set_my_commands(commands=commands_default + commands_admin, scope=BotCommandScopeAllPrivateChats())
 
-functions_admin = functions.AdminFunctions(bot)
-functions_meeting = functions.MeetingFunctions(bot)
+functions_admin = AdminFunctions(bot)
+functions_meeting = MeetingFunctions(bot)
+functions_production_calendar = ProductionCalendarFunctions(bot, model_root.select_production_calendar_token())
 functions_dict = FunctionsDict(bot, functions_admin, functions_meeting)
 
 callbacks_meeting = callbacks.MeetingCallbackHandlers(functions_meeting)
@@ -55,6 +59,7 @@ callbacks_admin = callbacks.AdminCallbackHandlers(functions_admin)
 
 COMMANDS_MEETING = functions_dict.get_commands_meeting()
 COMMANDS_ADMIN = functions_dict.get_commands_admin()
+
 
 # region root commands
 @bot.message_handler(commands=['start'])
@@ -92,7 +97,48 @@ def admin(message):
 @bot.message_handler(func=lambda message: message.chat.type == 'private' and
                                           str(message.text) == 'Производственный календарь 📅')
 def production(message):
-    bot.send_message(message.chat.id, 'Временно не поддерживается ⏱️', reply_markup=functions.menu)
+    def _refresh_files():
+        bot.send_message(message.chat.id, 'Необходимо обновить файлы производственного календаря, '
+                                          'запускаю обновление...')
+        functions_production_calendar.update_production_calendar_files(message)
+
+    if message.chat.type != 'private':
+        return
+
+    files = {
+        'Неделя.xlsx': os.path.join(p_excel.FILES_DIR, p_dto.Week.FILE_NAME),
+        'Месяц.xlsx': os.path.join(p_excel.FILES_DIR, p_dto.Month.FILE_NAME),
+        'Квартал.xlsx': os.path.join(p_excel.FILES_DIR, p_dto.Quarter.FILE_NAME),
+        'Год.xlsx': os.path.join(p_excel.FILES_DIR, p_dto.Year.FILE_NAME)
+    }
+    files = {key: os.path.abspath(path) for key, path in files.items()}  # noqa
+
+    do_refresh = False
+    if os.path.exists(p_excel.FILES_DIR):
+        today = datetime.datetime.today().date()
+        for name in files:
+            if not os.path.exists(files[name]):
+                do_refresh = True
+                break
+            last_modified = os.path.getmtime(files[name])
+            last_modified_date = datetime.datetime.fromtimestamp(last_modified).date()
+            if last_modified_date < today:
+                do_refresh = True
+                break
+    else:
+        do_refresh = True
+    if do_refresh:
+        try:
+            _refresh_files()
+        except Exception as ex:
+            bot.send_message(message.chat.id, 'Ошибка при попытке обновить производственный календарь ❌')
+            raise ex
+
+    for file_name in files:
+        file_path_abs = os.path.abspath(files[file_name])
+        with open(file_path_abs, 'rb') as file:
+            bot.send_document(message.chat.id, file, visible_file_name=file_name)
+    bot.send_message(message.chat.id, 'Все файлы календаря отправлены ✅', reply_markup=functions.menu)
 
 
 # endregion
@@ -308,6 +354,11 @@ def delete_sent_notifies():
 
 
 @handle_exceptions
+def update_production_calendar_files():
+    functions_production_calendar.run_update_production_calendar_files()
+
+
+@handle_exceptions
 def set_is_today_day_off():
     pass
 
@@ -327,6 +378,7 @@ schedule.every(1).minute.do(check_meetings_daily)
 schedule.every(1).minute.do(check_meetings_weekly)
 schedule.every(1).minute.do(check_meetings_monthly)
 schedule.every(1).minute.do(check_meetings_weekly_double)
+schedule.every().day.at('03:00').do(update_production_calendar_files)
 Thread(target=run_schedule).start()
 
 # endregion
