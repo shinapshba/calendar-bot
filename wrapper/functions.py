@@ -236,6 +236,10 @@ class MeetingFunctions:
     def __init__(self, bot):
         self.bot = bot
 
+    @staticmethod
+    def build_inline_button(meeting, prefix):
+        return InlineKeyboardButton(text=meeting.get_view_short(), callback_data=f'{prefix}{meeting.id_}')
+
     def show(self, call):
         if call.message.chat.type != 'private':
             self.show_(call, call.message.chat.id)
@@ -281,12 +285,36 @@ class MeetingFunctions:
         for meeting_list in meetings_lists:
             meeting_views += list(map(lambda m: f'{m.get_view_short()}', meeting_list))
         meeting_views.sort()
-        meeting_markup = InlineKeyboardMarkup()
-        meeting_markup.row_width = 6
-        for meeting in meeting_views:
-            meeting_markup.add(InlineKeyboardButton(text=meeting, callback_data='some'))
-        add_cancel_button(meeting_markup)
-        self.bot.send_message(call.message.chat.id, 'ℹ️', reply_markup=meeting_markup)
+
+        markup = InlineKeyboardMarkup()
+        markup.row_width = 6
+        for md in meetings_daily:
+            markup.add(MeetingFunctions.build_inline_button(md, 'show_meeting_id_daily'))
+        for mw in meetings_weekly:
+            markup.add(MeetingFunctions.build_inline_button(mw, 'show_meeting_id_weekly'))
+        for mm in meetings_monthly:
+            markup.add(MeetingFunctions.build_inline_button(mm, 'show_meeting_id_monthly'))
+        for mwd in meetings_weekly_double:
+            markup.add(MeetingFunctions.build_inline_button(mwd, 'show_meeting_id_doubleweekly'))
+        for m_ in future_meetings:
+            markup.add(MeetingFunctions.build_inline_button(m_, 'show_meeting_id'))
+        add_cancel_button(markup)
+        self.bot.send_message(call.message.chat.id,
+                              'Выберите встречу, чтобы получить подробную информацию',
+                              reply_markup=markup)
+
+    def show__(self, call, meeting_id):
+        if '_daily' in meeting_id:
+            meeting = m_meeting_daily.select_meeting_by_id(meeting_id.replace('_daily', ''))
+        elif '_weekly' in meeting_id:
+            meeting = m_meeting_weekly.select_meeting_by_id(meeting_id.replace('_weekly', ''))
+        elif '_monthly' in meeting_id:
+            meeting = m_meeting_monthly.select_meeting_by_id(meeting_id.replace('_monthly', ''))
+        elif '_doubleweekly' in meeting_id:
+            meeting = m_meeting_weekly_double.select_meeting_by_id(meeting_id.replace('_doubleweekly', ''))
+        else:
+            meeting = m_meeting.select_meeting_by_id(meeting_id)
+        self.bot.send_message(call.message.chat.id, meeting.get_view_full(), reply_markup=menu)
 
     def delete(self, call):
         if call.message.chat.type != 'private':
@@ -312,19 +340,16 @@ class MeetingFunctions:
         markup = InlineKeyboardMarkup()
         markup.row_width = 6
 
-        def build_inline_button(meeting, prefix):
-            return InlineKeyboardButton(text=meeting.get_view_short(), callback_data=f'{prefix}{meeting.id_}')
-
         for md in meetings_daily:
-            markup.add(build_inline_button(md, 'delete_meeting_id_daily'))
+            markup.add(MeetingFunctions.build_inline_button(md, 'delete_meeting_id_daily'))
         for mw in meetings_weekly:
-            markup.add(build_inline_button(mw, 'delete_meeting_id_weekly'))
+            markup.add(MeetingFunctions.build_inline_button(mw, 'delete_meeting_id_weekly'))
         for mm in meetings_monthly:
-            markup.add(build_inline_button(mm, 'delete_meeting_id_monthly'))
+            markup.add(MeetingFunctions.build_inline_button(mm, 'delete_meeting_id_monthly'))
         for mwd in meetings_weekly_double:
-            markup.add(build_inline_button(mwd, 'delete_meeting_id_doubleweekly'))
+            markup.add(MeetingFunctions.build_inline_button(mwd, 'delete_meeting_id_doubleweekly'))
         for m in future_meetings:
-            markup.add(build_inline_button(m, 'delete_meeting_id'))
+            markup.add(MeetingFunctions.build_inline_button(m, 'delete_meeting_id'))
         add_cancel_button(markup)
         self.bot.send_message(message.chat.id, 'Выберите встречу', reply_markup=markup)
 

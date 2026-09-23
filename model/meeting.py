@@ -1,4 +1,4 @@
-from model.root import execute, fetchall, MEETING_BASE_COLS, build_placeholders_with_params
+from model.root import execute, fetchall, MEETING_BASE_COLS, build_placeholders_with_params, fetchone
 from dto import Meeting
 
 __INSERT_MEETING = f'INSERT INTO meeting ({MEETING_BASE_COLS}, date_time) VALUES (?, ?, ?, ?, ?, ?, ?)'
@@ -7,6 +7,7 @@ __DELETE_MEETING = 'DELETE FROM meeting WHERE id = ?'
 __SELECT_MEETING_BY_USERNAME = __SELECT_MEETING + ' AND username = ?'
 __SELECT_MEETING_FOR_NOTIFY_DAY = 'SELECT * FROM meeting WHERE is_notified_day = 0'
 __SELECT_MEETING_FOR_NOTIFY_MIN = 'SELECT * FROM meeting WHERE is_notified_min = 0'
+__SELECT_MEETING_BY_ID = 'SELECT * FROM meeting WHERE id = ?'
 __UPDATE_MEETING_NOTIFY_DAY = 'UPDATE meeting SET is_notified_day = 1 WHERE id = ?'
 __UPDATE_MEETING_NOTIFY_MIN = 'UPDATE meeting SET is_notified_min = 1 WHERE id = ?'
 
@@ -47,3 +48,6 @@ def select_meetings_for_chats(chat_ides):
     placeholders, chat_ides = build_placeholders_with_params(chat_ides)
     query = f'SELECT * FROM meeting WHERE chat_id IN ({placeholders})'
     return fetchall(query, Meeting.row_factory(), chat_ides)
+
+def select_meeting_by_id(meeting_id):
+    return fetchall(__SELECT_MEETING_BY_ID, Meeting.row_factory(), (meeting_id,))[0]

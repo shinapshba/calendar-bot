@@ -192,6 +192,11 @@ def delete_meeting_id_callback_handler(call):
     callbacks_meeting.delete_meeting_id_callback_handler(call)
 
 
+@bot.callback_query_handler(func=lambda call: call.data.startswith('show_meeting_id'))
+def show_meeting_id_callback_handler(call):
+    callbacks_meeting.show_meeting_id_callback_handler(call)
+
+
 @bot.callback_query_handler(func=lambda call: call.data.startswith('add_meeting_regular_flg'))
 def delete_meeting_group_id_callback_handler(call):
     callbacks_meeting.add_meeting_callback_handler(call)

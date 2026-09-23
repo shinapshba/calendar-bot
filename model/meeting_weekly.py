@@ -7,6 +7,7 @@ __DELETE_MEETING_WEEKLY = 'DELETE FROM meeting_weekly WHERE id = ?'
 __SELECT_MEETING_WEEKLY_NOT_NOTIFIED = 'SELECT * from meeting_weekly WHERE is_notified = 0'
 __UPDATE_MEETING_WEEKLY_NOTIFIED_FLAG = 'UPDATE meeting_weekly SET is_notified = 1 WHERE id = ?'
 __BACKUP_MEETING_WEEKLY = 'UPDATE meeting_weekly SET is_notified = 0'
+__SELECT_MEETING_WEEKLY_BY_ID = 'SELECT * FROM meeting_weekly WHERE id = ?'
 __INSERT_MEETING_WEEKLY = f'''INSERT INTO meeting_weekly ({MEETING_BASE_COLS}, day, time) 
 VALUES (?, ?, ?, ?, ?, ?, ?, ?)'''
 
@@ -44,3 +45,8 @@ def select_meetings_weekly_for_chats(chat_ides):
     placeholders, chat_ides = build_placeholders_with_params(chat_ides)
     query = f'SELECT * FROM meeting_weekly WHERE chat_id IN ({placeholders})'
     return fetchall(query, MeetingWeekly.row_factory(), chat_ides)
+
+
+def select_meeting_by_id(meeting_weekly_id):
+    return fetchall(__SELECT_MEETING_WEEKLY_BY_ID, MeetingWeekly.row_factory(), (meeting_weekly_id,))[0]
+

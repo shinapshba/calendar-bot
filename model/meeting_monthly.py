@@ -7,6 +7,7 @@ __SELECT_MEETING_MONTHLY_BY_USERNAME = __SELECT_MEETING_MONTHLY + ' AND username
 __SELECT_MEETING_MONTHLY_NOT_NOTIFIED = 'SELECT * from meeting_monthly WHERE is_notified = 0'
 __UPDATE_MEETING_MONTHLY_NOTIFIED_FLAG = 'UPDATE meeting_monthly SET is_notified = 1 WHERE id = ?'
 __BACKUP_MEETING_MONTHLY = 'UPDATE meeting_monthly SET is_notified = 0'
+__SELECT_MEETING_MONTHLY_BY_ID = 'SELECT * FROM meeting_monthly WHERE id = ?'
 __INSERT_MEETING_MONTHLY = f'''INSERT INTO meeting_monthly ({MEETING_BASE_COLS}, day_of_month, time) 
 VALUES (?, ?, ?, ?, ?, ?, ?, ?)'''
 
@@ -44,3 +45,7 @@ def update_meetings_monthly(id_):
 
 def backup_meetings_monthly():
     execute(__BACKUP_MEETING_MONTHLY)
+
+
+def select_meeting_by_id(meeting_monthly_id):
+    return fetchall(__SELECT_MEETING_MONTHLY_BY_ID, MeetingMonthly.row_factory(), (meeting_monthly_id,))[0]

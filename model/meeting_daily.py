@@ -8,6 +8,7 @@ __INSERT_MEETING_DAILY = f'INSERT INTO meeting_daily ({MEETING_BASE_COLS}, time)
 __SELECT_MEETING_DAILY_NOT_NOTIFIED = 'SELECT * from meeting_daily WHERE is_notified = 0'
 __UPDATE_MEETING_DAILY_NOTIFIED_FLAG = 'UPDATE meeting_daily SET is_notified = 1 WHERE id = ?'
 __BACKUP_MEETING_DAILY = 'UPDATE meeting_daily SET is_notified = 0'
+__SELECT_MEETING_DAILY_BY_ID = 'SELECT * FROM meeting_daily WHERE id = ?'
 
 
 def select_meetings_daily(chat_id):
@@ -43,3 +44,7 @@ def select_meetings_daily_for_chats(chat_ides):
     placeholders, chat_ides = build_placeholders_with_params(chat_ides)
     query = f'SELECT * FROM meeting_daily WHERE chat_id IN ({placeholders})'
     return fetchall(query, MeetingDaily.row_factory(), chat_ides)
+
+
+def select_meeting_by_id(meeting_daily_id):
+    return fetchall(__SELECT_MEETING_DAILY_BY_ID, MeetingDaily.row_factory(), (meeting_daily_id,))[0]

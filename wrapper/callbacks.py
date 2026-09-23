@@ -73,6 +73,11 @@ class MeetingCallbackHandlers:
         self.meeting_functions.delete__(call.message, meeting_id)
         self.bot.delete_message(call.message.chat.id, call.message.message_id)
 
+    def show_meeting_id_callback_handler(self, call):
+        meeting_id = call.data.replace('show_meeting_id', '')
+        self.meeting_functions.show__(call.message, meeting_id)
+        self.bot.delete_message(call.message.chat.id, call.message.message_id)
+
     def meeting_schedule_callback_handler(self, call):
         schedule = call.data.replace('meeting_schedule_', '').split('_')[0]
         meeting_chat_id = call.data.split('_')[3]
