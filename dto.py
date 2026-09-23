@@ -59,7 +59,7 @@ class Meeting(MeetingBase):
         return f'{self.chat_title}. {self.date_time}: {self.description}'
 
     def get_view_short(self):
-        return f'{self.date_time}: {self.description}'
+        return f'{self.date_time}'
 
 
 class MeetingDaily(MeetingBase):
@@ -93,7 +93,7 @@ class MeetingDaily(MeetingBase):
         return f'{self.chat_title}. Ежедневно, в {self.time_}: {self.description}'
 
     def get_view_short(self):
-        return f'Ежедневно, в {self.time_}: {self.description}'
+        return f'Ежедневно, в {self.time_}'
 
 
 class MeetingWeekly(MeetingBase):
@@ -143,7 +143,7 @@ class MeetingWeekly(MeetingBase):
         return f'{self.chat_title}. {self.get_day_string()}, в {self.time_}: {self.description}'
 
     def get_view_short(self):
-        return f'{self.get_day_string()}, в {self.time_}: {self.description}'
+        return f'{self.get_day_string()}, в {self.time_}'
 
 
 class MeetingWeeklyDouble(MeetingBase):
@@ -206,7 +206,7 @@ class MeetingWeeklyDouble(MeetingBase):
         return f'{self.chat_title}. {self.get_day_string()}, в {self.time_}: {self.description}'
 
     def get_view_short(self):
-        return f'{self.get_day_string()}, в {self.time_}: {self.description}'
+        return f'{self.get_day_string()}, в {self.time_}'
 
 
 class MeetingMonthly(MeetingBase):
@@ -243,7 +243,7 @@ class MeetingMonthly(MeetingBase):
         return f'{self.chat_title}. Каждое {self.day_of_month}ое число: {self.description}'
 
     def get_view_short(self):
-        return f'Каждое {self.day_of_month}ое число: {self.description}'
+        return f'Каждое {self.day_of_month}ое число'
 
 
 class SentNotify:
