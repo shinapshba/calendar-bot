@@ -245,7 +245,8 @@ def check_meetings_by_notification_day():
     meetings = model_meeting.select_meetings_for_notify_by_day()
     meetings_to_notify = list(filter(lambda m_: utils.is_date_tomorrow(m_.date_time), meetings))
     for m in meetings_to_notify:
-        bot.send_message(m.chat_id, m.get_notify_text(), parse_mode='HTML', disable_notification=is_day_off)
+        text = 'Напоминание о встрече 👀\n' + m.get_view_full()
+        bot.send_message(m.chat_id, text, parse_mode='HTML', disable_notification=is_day_off)
         model_meeting.update_meeting_notify_flag_day(m.id_)
 
 
@@ -257,8 +258,8 @@ def check_meetings_by_notification_min():
         filter(lambda m_: utils.is_datetime_delta_passed_minutes(m_.date_time, int(m_.notify_lag_min)), meetings)
     )
     for m in meetings_to_notify:
-        sent_message = bot.send_message(m.chat_id, m.get_notify_text(), parse_mode='HTML',
-                                        disable_notification=is_day_off)
+        text = 'Напоминание о встрече 👀\n' + m.get_view_full()
+        sent_message = bot.send_message(m.chat_id, text, parse_mode='HTML', disable_notification=is_day_off)
         model_meeting.update_meeting_notify_flag_min(m.id_)
         model_root.insert_sent_notify(sent_message.chat.id, sent_message.message_id)
 
@@ -272,8 +273,8 @@ def check_meetings_daily():
                           utils.is_time_delta_passed_minutes(m_.time_, int(m_.notify_lag_min)), meetings)
     )
     for m in meetings_to_notify:
-        sent_message = bot.send_message(m.chat_id, m.get_notify_text(), parse_mode='HTML',
-                                        disable_notification=is_day_off)
+        text = 'Напоминание о встрече 👀\n' + m.get_view_full()
+        sent_message = bot.send_message(m.chat_id, text, parse_mode='HTML', disable_notification=is_day_off)
         model_meeting_daily.update_meetings_daily(m.id_)
         model_root.insert_sent_notify(sent_message.chat.id, sent_message.message_id)
 
@@ -290,8 +291,8 @@ def check_meetings_weekly():
         )
     )
     for m in meetings_to_notify:
-        sent_message = bot.send_message(m.chat_id, m.get_notify_text(), parse_mode='HTML',
-                                        disable_notification=is_day_off)
+        text = 'Напоминание о встрече 👀\n' + m.get_view_full()
+        sent_message = bot.send_message(m.chat_id, text, parse_mode='HTML', disable_notification=is_day_off)
         model_meeting_weekly.update_meetings_weekly(m.id_)
         model_root.insert_sent_notify(sent_message.chat.id, sent_message.message_id)
 
@@ -308,8 +309,8 @@ def check_meetings_monthly():
         )
     )
     for m in meetings_to_notify:
-        sent_message = bot.send_message(m.chat_id, m.get_notify_text(), parse_mode='HTML',
-                                        disable_notification=is_day_off)
+        text = 'Напоминание о встрече 👀\n' + m.get_view_full()
+        sent_message = bot.send_message(m.chat_id, text, parse_mode='HTML', disable_notification=is_day_off)
         model_meeting_monthly.update_meetings_monthly(m.id_)
         model_root.insert_sent_notify(sent_message.chat.id, sent_message.message_id)
 
@@ -327,8 +328,8 @@ def check_meetings_weekly_double():
         )
     )
     for m in meetings_to_notify:
-        sent_message = bot.send_message(m.chat_id, m.get_notify_text(), parse_mode='HTML',
-                                        disable_notification=is_day_off)
+        text = 'Напоминание о встрече 👀\n' + m.get_view_full()
+        sent_message = bot.send_message(m.chat_id, text, parse_mode='HTML', disable_notification=is_day_off)
         model_meeting_weekly_double.update_meetings_weekly_double(m.id_)
         model_root.insert_sent_notify(sent_message.chat.id, sent_message.message_id)
 
