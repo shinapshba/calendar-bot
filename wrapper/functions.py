@@ -314,6 +314,9 @@ class MeetingFunctions:
             meeting = m_meeting_weekly_double.select_meeting_by_id(meeting_id.replace('_doubleweekly', ''))
         else:
             meeting = m_meeting.select_meeting_by_id(meeting_id)
+
+        if meeting.chat_title == 'Личная':
+            meeting.chat_title = 'Личные сообщения'
         text = f'Информация о встрече ℹ️\n\nЧат: {meeting.chat_title}\n' + meeting.get_view_full()
         self.bot.send_message(message.chat.id, text, parse_mode='HTML', reply_markup=menu)
 
