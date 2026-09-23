@@ -303,7 +303,7 @@ class MeetingFunctions:
                               'Выберите встречу, чтобы получить подробную информацию',
                               reply_markup=markup)
 
-    def show__(self, call, meeting_id):
+    def show__(self, message, meeting_id):
         if '_daily' in meeting_id:
             meeting = m_meeting_daily.select_meeting_by_id(meeting_id.replace('_daily', ''))
         elif '_weekly' in meeting_id:
@@ -314,7 +314,7 @@ class MeetingFunctions:
             meeting = m_meeting_weekly_double.select_meeting_by_id(meeting_id.replace('_doubleweekly', ''))
         else:
             meeting = m_meeting.select_meeting_by_id(meeting_id)
-        self.bot.send_message(call.message.chat.id, meeting.get_view_full(), reply_markup=menu)
+        self.bot.send_message(message.chat.id, meeting.get_view_full(), reply_markup=menu)
 
     def delete(self, call):
         if call.message.chat.type != 'private':
