@@ -285,8 +285,12 @@ class MeetingFunctions:
             for meeting_list in meetings_lists:
                 meeting_views += list(map(lambda m: f'{m.get_view_short()}', meeting_list))
         meeting_views.sort()
-        text = '\n |\n'.join(meeting_views)
-        self.bot.send_message(call.message.chat.id, text, reply_markup=menu)
+        meeting_markup = InlineKeyboardMarkup()
+        meeting_markup.row_width = 6
+        for meeting in meeting_views:
+            meeting_markup.add(InlineKeyboardButton(text=meeting, callback_data='some'))
+        add_cancel_button(meeting_markup)
+        self.bot.send_message(call.message.chat.id, 'ℹ️', reply_markup=meeting_markup)
 
     def delete(self, call):
         if call.message.chat.type != 'private':
