@@ -278,12 +278,8 @@ class MeetingFunctions:
 
         meeting_views = []
         meetings_lists = [future_meetings, meetings_daily, meetings_weekly, meetings_monthly, meetings_weekly_double]
-        if call.message.chat.type == 'private':
-            for meeting_list in meetings_lists:
-                meeting_views += list(map(lambda m: f'{m.get_view_with_chat_title()}', meeting_list))
-        else:
-            for meeting_list in meetings_lists:
-                meeting_views += list(map(lambda m: f'{m.get_view_short()}', meeting_list))
+        for meeting_list in meetings_lists:
+            meeting_views += list(map(lambda m: f'{m.get_view_short()}', meeting_list))
         meeting_views.sort()
         meeting_markup = InlineKeyboardMarkup()
         meeting_markup.row_width = 6
