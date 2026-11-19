@@ -5,7 +5,10 @@ import datetime
 import time
 import traceback
 import os
+import asyncio
 
+from jokeapi import Jokes
+from translate import Translator
 from wrapper import functions, callbacks
 from functions_dict import FunctionsDict
 from model import root as model_root
@@ -60,6 +63,19 @@ callbacks_admin = callbacks.AdminCallbackHandlers(functions_admin)
 COMMANDS_MEETING = functions_dict.get_commands_meeting()
 COMMANDS_ADMIN = functions_dict.get_commands_admin()
 
+
+async def get_joke_html():
+    jokes = await Jokes()
+    joke = await jokes.get_joke(
+        category=['programming'], blacklist=['nsfw', 'racist', 'religious', 'political'], lang='en'
+    )
+    if joke['type'] == 'single':
+        joke_text = joke['joke']
+    else:
+        joke_text = '- ' + joke['setup'] + '\n- ' + joke['delivery']
+    translator = Translator(from_lang='en', to_lang='ru')
+    translation = translator.translate(joke_text)
+    return f'{joke_text}\n\n<i>{translation}</i>'
 
 # region root commands
 @bot.message_handler(commands=['start'])
@@ -282,6 +298,8 @@ def check_meetings_daily():
         sent_message = bot.send_message(m.chat_id, text, parse_mode='HTML', disable_notification=is_day_off)
         model_meeting_daily.update_meetings_daily(m.id_)
         model_root.insert_sent_notify(sent_message.chat.id, sent_message.message_id)
+        joke = asyncio.run(get_joke_html())
+        bot.send_message(m.chat_id, text=joke, disable_notification=is_day_off)
 
 
 @handle_exceptions
