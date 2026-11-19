@@ -299,7 +299,7 @@ def check_meetings_daily():
         model_meeting_daily.update_meetings_daily(m.id_)
         model_root.insert_sent_notify(sent_message.chat.id, sent_message.message_id)
         joke = asyncio.run(get_joke_html())
-        bot.send_message(m.chat_id, text=joke, disable_notification=is_day_off)
+        bot.send_message(m.chat_id, text=joke, parse_mode='HTML', disable_notification=is_day_off)
 
 
 @handle_exceptions
