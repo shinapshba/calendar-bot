@@ -77,6 +77,7 @@ async def get_joke_html():
     translation = translator.translate(joke_text)
     return f'{joke_text}\n\n<i>{translation}</i>'
 
+
 # region root commands
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -260,6 +261,10 @@ def handle_exceptions(func):
     return wrapper
 
 
+def save_notify(message):
+    model_root.insert_sent_notify(message.chat.id, message.message_id)
+
+
 @handle_exceptions
 def check_meetings_by_notification_day():
     is_day_off = model_root.select_is_today_day_off()
@@ -280,9 +285,8 @@ def check_meetings_by_notification_min():
     )
     for m in meetings_to_notify:
         text = 'Напоминание о встрече 👀\n' + m.get_view_full()
-        sent_message = bot.send_message(m.chat_id, text, parse_mode='HTML', disable_notification=is_day_off)
+        save_notify(bot.send_message(m.chat_id, text, parse_mode='HTML', disable_notification=is_day_off))
         model_meeting.update_meeting_notify_flag_min(m.id_)
-        model_root.insert_sent_notify(sent_message.chat.id, sent_message.message_id)
 
 
 @handle_exceptions
@@ -295,11 +299,12 @@ def check_meetings_daily():
     )
     for m in meetings_to_notify:
         text = 'Напоминание о встрече 👀\n' + m.get_view_full()
-        sent_message = bot.send_message(m.chat_id, text, parse_mode='HTML', disable_notification=is_day_off)
+        sent_message = bot.send_message(m.chat_id, text=text, parse_mode='HTML', disable_notification=is_day_off)
+        save_notify(sent_message)
         model_meeting_daily.update_meetings_daily(m.id_)
-        model_root.insert_sent_notify(sent_message.chat.id, sent_message.message_id)
-        joke = asyncio.run(get_joke_html())
-        bot.send_message(m.chat_id, text=joke, parse_mode='HTML', disable_notification=is_day_off)
+        if sent_message.chat.type != 'private':
+            joke = asyncio.run(get_joke_html())
+            save_notify(bot.send_message(m.chat_id, text=joke, parse_mode='HTML', disable_notification=is_day_off))
 
 
 @handle_exceptions
@@ -315,9 +320,8 @@ def check_meetings_weekly():
     )
     for m in meetings_to_notify:
         text = 'Напоминание о встрече 👀\n' + m.get_view_full()
-        sent_message = bot.send_message(m.chat_id, text, parse_mode='HTML', disable_notification=is_day_off)
+        save_notify(bot.send_message(m.chat_id, text, parse_mode='HTML', disable_notification=is_day_off))
         model_meeting_weekly.update_meetings_weekly(m.id_)
-        model_root.insert_sent_notify(sent_message.chat.id, sent_message.message_id)
 
 
 @handle_exceptions
@@ -333,9 +337,8 @@ def check_meetings_monthly():
     )
     for m in meetings_to_notify:
         text = 'Напоминание о встрече 👀\n' + m.get_view_full()
-        sent_message = bot.send_message(m.chat_id, text, parse_mode='HTML', disable_notification=is_day_off)
+        save_notify(bot.send_message(m.chat_id, text, parse_mode='HTML', disable_notification=is_day_off))
         model_meeting_monthly.update_meetings_monthly(m.id_)
-        model_root.insert_sent_notify(sent_message.chat.id, sent_message.message_id)
 
 
 @handle_exceptions
@@ -352,9 +355,8 @@ def check_meetings_weekly_double():
     )
     for m in meetings_to_notify:
         text = 'Напоминание о встрече 👀\n' + m.get_view_full()
-        sent_message = bot.send_message(m.chat_id, text, parse_mode='HTML', disable_notification=is_day_off)
+        save_notify(bot.send_message(m.chat_id, text, parse_mode='HTML', disable_notification=is_day_off))
         model_meeting_weekly_double.update_meetings_weekly_double(m.id_)
-        model_root.insert_sent_notify(sent_message.chat.id, sent_message.message_id)
 
 
 @handle_exceptions
